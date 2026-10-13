@@ -1,0 +1,15 @@
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dataset_v0.3/
+dataset_v0.3_smoke/
+dataset_v0.3_smoke_noisy/
+dataset_v0.2_noisy_smoke/
+data_readiness_validation.json
+v0.2_validation.json
+v0.3_source_validation.json
+*.wav
+*.flac

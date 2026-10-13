@@ -1,0 +1,101 @@
+﻿id,intent,language_code,text,other_type,source,script,mix
+bal_001,balance,hi-IN,मेरा account balance कितना है?,,tts,devanagari+latin,code_mixed
+bal_002,balance,en-IN,What's my current account balance?,,tts,latin,mono
+bal_003,balance,ta-IN,என் கணக்கில் எவ்வளவு பணம் இருக்கிறது?,,tts,tamil,mono
+bal_004,balance,hi-IN,Mera account balance kitna hai bata do.,,tts,latin,romanised_hinglish
+bal_005,balance,bn-IN,আমার অ্যাকাউন্টে কত টাকা আছে?,,tts,bengali,mono
+bal_006,balance,mr-IN,माझ्या खात्यात किती शिल्लक आहे?,,tts,devanagari,mono
+bal_007,balance,hi-IN,Can you tell me मेरा balance?,,tts,devanagari+latin,code_mixed
+rtx_001,recent_transactions,en-IN,Show me my last five transactions.,,tts,latin,mono
+rtx_002,recent_transactions,hi-IN,मेरे पिछले कुछ transactions बताइए।,,tts,devanagari+latin,code_mixed
+rtx_003,recent_transactions,ta-IN,என் சமீபத்திய பரிவர்த்தனைகளைக் காட்டுங்கள்.,,tts,tamil,mono
+rtx_004,recent_transactions,hi-IN,Pichle hafte ke saare transactions dikhao.,,tts,latin,romanised_hinglish
+rtx_005,recent_transactions,te-IN,నా చివరి ఐదు లావాదేవీలను చూపించండి.,,tts,telugu,mono
+rtx_006,recent_transactions,bn-IN,আমার সাম্প্রতিক লেনদেনগুলো দেখান।,,tts,bengali,mono
+rtx_007,recent_transactions,en-IN,I want to see my mini statement.,,tts,latin,mono
+blk_001,block_card,ta-IN,என் கார்டை உடனே பிளாக் செய்யுங்கள்.,,tts,tamil,mono
+blk_002,block_card,hi-IN,मेरा debit card block कर दो।,,tts,devanagari+latin,code_mixed
+blk_003,block_card,en-IN,"Please block my credit card, I lost it.",,tts,latin,mono
+blk_004,block_card,hi-IN,"Mera card kho gaya hai, jaldi block karo.",,tts,latin,romanised_hinglish
+blk_005,block_card,mr-IN,माझे डेबिट कार्ड ताबडतोब ब्लॉक करा.,,tts,devanagari,mono
+blk_006,block_card,te-IN,"నా కార్డ్ పోయింది, వెంటనే బ్లాక్ చేయండి.",,tts,telugu,mono
+blk_007,block_card,en-IN,Can you freeze my card right now?,,tts,latin,mono
+emi_001,emi_due,hi-IN,मेरी EMI की due date कब है?,,tts,devanagari+latin,code_mixed
+emi_002,emi_due,en-IN,When is my next EMI payment due?,,tts,latin,mono
+emi_003,emi_due,ta-IN,என் அடுத்த EMI எப்போது கட்ட வேண்டும்?,,tts,latin+tamil,code_mixed
+emi_004,emi_due,hi-IN,Meri EMI ki last date kab hai?,,tts,latin,romanised_hinglish
+emi_005,emi_due,bn-IN,আমার পরবর্তী EMI কবে দিতে হবে?,,tts,bengali+latin,code_mixed
+emi_006,emi_due,mr-IN,माझा पुढचा हप्ता कधी भरायचा आहे?,,tts,devanagari,mono
+emi_007,emi_due,hi-IN,इस महीने की EMI कितनी बाकी है?,,tts,devanagari+latin,code_mixed
+frd_001,report_fraud,en-IN,"I see an unknown transaction, report fraud.",,tts,latin,mono
+frd_002,report_fraud,hi-IN,"मेरे account से किसी ने बिना बताए पैसे निकाल लिए, fraud report करना है।",,tts,devanagari+latin,code_mixed
+frd_003,report_fraud,ta-IN,"என் கணக்கில் மோசடி நடந்திருக்கிறது, புகார் செய்ய வேண்டும்.",,tts,tamil,mono
+frd_004,report_fraud,hi-IN,"Mere account se paise kat gaye, maine kuch nahi kiya, fraud report karna hai.",,tts,latin,romanised_hinglish
+frd_005,report_fraud,te-IN,"నా ఖాతా నుంచి నాకు తెలియకుండా డబ్బు తీశారు, మోసం గురించి ఫిర్యాదు చేయాలి.",,tts,telugu,mono
+frd_006,report_fraud,bn-IN,"আমার কার্ডে এমন একটা চার্জ এসেছে যেটা আমি করিনি, প্রতারণার অভিযোগ জানাতে চাই।",,tts,bengali,mono
+frd_007,report_fraud,en-IN,There's a suspicious charge on my card that I didn't make.,,tts,latin,mono
+cmp_001,complaint_status,ta-IN,என் புகாரின் நிலை என்ன?,,tts,tamil,mono
+cmp_002,complaint_status,hi-IN,मैंने जो complaint की थी उसका status क्या है?,,tts,devanagari+latin,code_mixed
+cmp_003,complaint_status,en-IN,What is the status of my complaint?,,tts,latin,mono
+cmp_004,complaint_status,hi-IN,"Meri complaint ka kya hua, koi update hai?",,tts,latin,romanised_hinglish
+cmp_005,complaint_status,mr-IN,मी केलेल्या तक्रारीची स्थिती काय आहे?,,tts,devanagari,mono
+cmp_006,complaint_status,te-IN,నేను చేసిన ఫిర్యాదు స్థితి ఏమిటి?,,tts,telugu,mono
+cmp_007,complaint_status,en-IN,Any update on the ticket I raised last week?,,tts,latin,mono
+upd_001,update_details,hi-IN,मेरा registered mobile number update करना है।,,tts,devanagari+latin,code_mixed
+upd_002,update_details,en-IN,I want to change my address in the bank records.,,tts,latin,mono
+upd_003,update_details,ta-IN,என் பதிவு செய்த மொபைல் எண்ணை மாற்ற வேண்டும்.,,tts,tamil,mono
+upd_004,update_details,hi-IN,Mujhe apna email ID update karwana hai.,,tts,latin,romanised_hinglish
+upd_005,update_details,bn-IN,আমার রেজিস্টার্ড মোবাইল নম্বরটা বদলাতে চাই।,,tts,bengali,mono
+upd_006,update_details,hi-IN,"Please update my नाम की spelling, गलत लिखा है।",,tts,devanagari+latin,code_mixed
+upd_007,update_details,mr-IN,माझ्या खात्यातील पत्ता बदलायचा आहे.,,tts,devanagari,mono
+brn_001,branch_timing,en-IN,What time does the nearest bank branch close?,,tts,latin,mono
+brn_002,branch_timing,hi-IN,बैंक की branch कितने बजे खुलती है?,,tts,devanagari+latin,code_mixed
+brn_003,branch_timing,ta-IN,வங்கிக் கிளை எத்தனை மணிக்குத் திறக்கும்?,,tts,tamil,mono
+brn_004,branch_timing,hi-IN,Kya aapki branch Saturday ko khuli rehti hai?,,tts,latin,romanised_hinglish
+brn_005,branch_timing,te-IN,బ్యాంక్ బ్రాంచ్ ఎన్ని గంటలకు తెరుస్తారు?,,tts,telugu,mono
+brn_006,branch_timing,bn-IN,ব্যাংকের শাখা রবিবার খোলা থাকে কি?,,tts,bengali,mono
+brn_007,branch_timing,en-IN,Is the branch open on Sundays?,,tts,latin,mono
+bil_001,pay_bill,hi-IN,मुझे अपना electricity bill pay करना है।,,tts,devanagari+latin,code_mixed
+bil_002,pay_bill,en-IN,I'd like to pay my mobile phone bill.,,tts,latin,mono
+bil_003,pay_bill,ta-IN,என் மின்கட்டணத்தைச் செலுத்த வேண்டும்.,,tts,tamil,mono
+bil_004,pay_bill,hi-IN,"Mujhe apna gas ka bill bharna hai, kaise karun?",,tts,latin,romanised_hinglish
+bil_005,pay_bill,mr-IN,मला माझे वीज बिल भरायचे आहे.,,tts,devanagari,mono
+bil_006,pay_bill,te-IN,నా కరెంట్ బిల్లు కట్టాలి.,,tts,telugu,mono
+bil_007,pay_bill,bn-IN,আমি আমার বিদ্যুৎ বিল দিতে চাই।,,tts,bengali,mono
+agt_001,transfer_to_agent,hi-IN,मुझे customer care executive से बात करनी है।,,tts,devanagari+latin,code_mixed
+agt_002,transfer_to_agent,en-IN,Connect me to a human agent please.,,tts,latin,mono
+agt_003,transfer_to_agent,ta-IN,எனக்கு ஒரு வாடிக்கையாளர் சேவை அதிகாரியுடன் பேச வேண்டும்.,,tts,tamil,mono
+agt_004,transfer_to_agent,hi-IN,"Bot se nahi, kisi real insaan se baat karao.",,tts,latin,romanised_hinglish
+agt_005,transfer_to_agent,bn-IN,আমি একজন গ্রাহক সেবা প্রতিনিধির সাথে কথা বলতে চাই।,,tts,bengali,mono
+agt_006,transfer_to_agent,mr-IN,मला ग्राहक सेवा अधिकाऱ्याशी बोलायचे आहे.,,tts,devanagari,mono
+agt_007,transfer_to_agent,te-IN,నాకు ఒక కస్టమర్ కేర్ ప్రతినిధితో మాట్లాడాలి.,,tts,telugu,mono
+ood_001,other,en-IN,What's the weather like in Delhi today?,out_of_domain,tts,latin,mono
+ood_002,other,hi-IN,कल भारत का क्रिकेट मैच कितने बजे है?,out_of_domain,tts,devanagari,mono
+ood_003,other,ta-IN,தமிழ்நாட்டின் தலைநகரம் எது?,out_of_domain,tts,tamil,mono
+ood_004,other,hi-IN,ताजमहल किसने बनवाया था?,out_of_domain,tts,devanagari,mono
+ood_005,other,en-IN,Tell me a good recipe for paneer butter masala.,out_of_domain,tts,latin,mono
+ood_006,other,mr-IN,आज पुण्यात पाऊस पडेल का?,out_of_domain,tts,devanagari,mono
+ood_007,other,te-IN,ఈ రోజు ఏదైనా మంచి సినిమా రిలీజ్ అయ్యిందా?,out_of_domain,tts,telugu,mono
+cht_001,other,en-IN,"Hello, how are you?",chitchat,tts,latin,mono
+cht_002,other,hi-IN,"नमस्ते, आप कैसे हैं?",chitchat,tts,devanagari,mono
+cht_003,other,bn-IN,"নমস্কার, আপনি কেমন আছেন?",chitchat,tts,bengali,mono
+cht_004,other,hi-IN,"Arre yaar, aaj bahut garmi hai na?",chitchat,tts,latin,romanised_hinglish
+cht_005,other,ta-IN,"வணக்கம், இன்று நாள் எப்படி இருக்கிறது?",chitchat,tts,tamil,mono
+cht_006,other,te-IN,"హాయ్, మీరు ఎలా ఉన్నారు?",chitchat,tts,telugu,mono
+amb_001,other,en-IN,Can you help me?,ambiguous_in_domain,tts,latin,mono
+amb_002,other,hi-IN,मुझे पैसों के बारे में कुछ पूछना है।,ambiguous_in_domain,tts,devanagari,mono
+amb_003,other,ta-IN,என் கணக்கு பற்றி ஒரு விஷயம் கேட்க வேண்டும்.,ambiguous_in_domain,tts,tamil,mono
+amb_004,other,hi-IN,Mere card ke saath kuch problem hai.,ambiguous_in_domain,tts,latin,romanised_hinglish
+amb_005,other,mr-IN,माझ्या खात्याबद्दल एक गोष्ट विचारायची होती.,ambiguous_in_domain,tts,devanagari,mono
+amb_006,other,bn-IN,আমার লোনের ব্যাপারে একটু জানতে চাই।,ambiguous_in_domain,tts,bengali,mono
+nrm_001,other,hi-IN,Mera account khul nahi raha hai.,unsupported_near_miss,tts,latin,romanised_hinglish
+nrm_002,other,en-IN,I want to apply for a new home loan.,unsupported_near_miss,tts,latin,mono
+nrm_003,other,hi-IN,मुझे अपना cheque book order करना है।,unsupported_near_miss,tts,devanagari+latin,code_mixed
+nrm_004,other,te-IN,నాకు కొత్త ఫిక్స్‌డ్ డిపాజిట్ ఖాతా తెరవాలి.,unsupported_near_miss,tts,telugu,mono
+nrm_005,other,bn-IN,আমি আমার ক্রেডিট কার্ডের লিমিট বাড়াতে চাই।,unsupported_near_miss,tts,bengali,mono
+non_001,other,hi-IN,हम्म... अच्छा... उम्म... वो...,non_intent_audio,tts,devanagari,mono
+non_002,other,en-IN,Umm... uh... let me think...,non_intent_audio,tts,latin,mono
+non_003,other,gu-IN,"મને થોડો સમય જોઈએ, હું પછી કહું છું.",non_intent_audio,tts,gujarati,mono
+non_004,other,kn-IN,"ನನಗೆ ಸ್ವಲ್ಪ ಸಮಯ ಬೇಕು, ನಾನು ನಂತರ ಹೇಳುತ್ತೇನೆ.",non_intent_audio,tts,kannada,mono
+non_005,other,und,,non_intent_audio,manual_silence,none,none
+non_006,other,und,,non_intent_audio,manual_noise,none,none
