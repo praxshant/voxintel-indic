@@ -21,7 +21,8 @@ hypothesis.
 - `dataset_v0.2/`: 198 validated Bulbul v3 WAV files.
 - `indicvoices_filtered/`: 1,915 IndicVoices FLAC files with weak,
   keyword-derived assignment labels. These labels are not verified ground
-  truth and English is not covered by this subset.
+  truth, and the CSV manifest explicitly records `label_provenance` and
+  `review_status`. English is not covered by this subset.
 - v0.3 bulk audio is intentionally not committed or generated until a small
   TTS smoke batch is reviewed.
 
@@ -57,6 +58,15 @@ audio, or API credentials. Run a small smoke batch first:
 
 The generator is resumable, writes checksums and provenance manifests, and
 assigns v0.3 splits from the precomputed paraphrase-cluster split.
+
+Audit the public manifest without changing audio:
+
+```powershell
+& 'C:\Users\ACER\anaconda3\envs\torch26\python.exe' scripts\audit_indicvoices.py `
+  --manifest indicvoices_filtered\manifest.csv `
+  --report indicvoices_audit.json `
+  --annotate
+```
 
 ## Create noisy variants
 

@@ -46,7 +46,10 @@ candidate labels are:
 
 Verified public labels: 0. These are derived keyword candidates requiring
 review. The current output was downloaded from the `valid` split only, so
-official train/valid speaker-overlap analysis has not been established.
+official train/valid speaker-overlap analysis has not been established. The
+manifest contains 963 unique speaker IDs; 349 speaker IDs occur in more than
+one retained record. This is a record-level audit, not proof of split
+independence.
 
 ## Validation status
 
@@ -55,6 +58,8 @@ official train/valid speaker-overlap analysis has not been established.
 - v0.3 clean audio generation: **not run**
 - noisy audio validation: **not run**
 - public weak-label review: **not complete**
+- public manifest provenance/review fields: **annotated** (`unreviewed`,
+  `keyword_derived_candidate`)
 - real-speaker evaluation: **not applicable and intentionally excluded**
 
 The readiness gate is therefore **not passed for model training**. The next

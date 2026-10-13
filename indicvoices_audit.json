@@ -1,0 +1,26 @@
+{
+  "manifest": "c:\\Users\\ACER\\OneDrive\\Desktop\\VoxIntel Indic\\indicvoices_filtered\\manifest.csv",
+  "rows": 1915,
+  "label_counts": {
+    "pay_bill": 414,
+    "other": 348,
+    "balance": 264,
+    "branch_timing": 23,
+    "update_details": 362,
+    "transfer_to_agent": 83,
+    "complaint_status": 256,
+    "recent_transactions": 43,
+    "emi_due": 94,
+    "report_fraud": 23,
+    "block_card": 5
+  },
+  "review_status_counts": {
+    "unreviewed": 1915
+  },
+  "unique_speakers": 963,
+  "duplicate_speaker_records": 349,
+  "suspicious_record_count": 0,
+  "suspicious_record_ids_sample": [],
+  "label_policy": "Keyword-derived labels are candidates, not verified ground truth.",
+  "evaluation_policy": "Keep public records separate from synthetic evaluation and do not tune thresholds on held-out public records."
+}

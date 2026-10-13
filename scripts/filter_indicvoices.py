@@ -205,6 +205,8 @@ def main() -> None:
                     **record_without_audio,
                     "id": source_id,
                     "intent": intent,
+                    "label_provenance": "keyword_derived_candidate",
+                    "review_status": "unreviewed",
                     "text": record.get("normalized") or record.get("text") or "",
                     "other_type": other_type,
                     "source": "indicvoices",
