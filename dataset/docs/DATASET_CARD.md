@@ -23,6 +23,18 @@ source dataset has no English configuration. Its assignment labels are
 keyword-derived weak candidates. Original annotations and speaker metadata are
 retained.
 
+A separate conservative curation pass retains 346 candidate records with
+intent-specific evidence and excludes 1,569 records without actionable or
+unambiguous evidence. The candidates remain unreviewed and are not trusted
+ground truth. The source 1,915-record manifest and all source audio remain
+preserved.
+
+The synthetic collection also includes a 12,390-file robustness suite with
+Gaussian conditions, deterministic colored-noise proxies, approximate
+telephone-channel effects, and an unseen combined condition. These are
+controlled simulations rather than licensed environmental recordings or
+real-call validation.
+
 ## Intended use
 
 Use the data for prototyping, controlled ablations, split validation, and
@@ -41,6 +53,8 @@ without a frozen, comparable evaluation.
 - Bulbul audio can contain TTS artefacts and does not represent natural callers.
 - IndicVoices assignment labels are weak and imbalanced; `block_card` has only
   five current candidate records.
+- The conservative public curation currently has no defensible candidates for
+  `block_card`, `complaint_status`, or `branch_timing`.
 - Keyword filtering can retain general banking discussion rather than an
   actionable caller intent.
 - No real-speaker test set is collected or required.

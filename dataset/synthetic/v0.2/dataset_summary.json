@@ -1,0 +1,27 @@
+﻿{
+    "source_csv":  "dataset/source/utterances_v0.2.csv",
+    "model":  "bulbul:v3",
+    "sample_rate":  8000,
+    "voices":  [
+                   "shubh",
+                   "simran"
+               ],
+    "variants":  2,
+    "rows":  198,
+    "splits":  {
+                   "train":  93,
+                   "dev":  7,
+                   "test":  98
+               },
+    "languages":  [
+                      "bn-IN",
+                      "en-IN",
+                      "gu-IN",
+                      "hi-IN",
+                      "kn-IN",
+                      "mr-IN",
+                      "ta-IN",
+                      "te-IN",
+                      "und"
+                  ]
+}

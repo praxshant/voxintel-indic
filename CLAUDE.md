@@ -109,7 +109,7 @@ This gate prevents the team from starting the modelling phase without a fixed te
 
 ## v0.3 readiness status
 
-`utterances_v0.3.csv` is a deterministic candidate text source with 2,400 rows:
+`dataset/source/utterances_v0.3.csv` is a deterministic candidate text source with 2,400 rows:
 
 - 1,800 in-scope rows: 1,200 train, 300 dev, 300 test
 - 600 `other` rows: 420 train, 90 dev, 90 test
@@ -119,25 +119,41 @@ This gate prevents the team from starting the modelling phase without a fixed te
   claim of human language review
 
 The source validator currently passes duplicate-text, ID, label, and cluster
-leakage checks. The v0.3 audio directory is not bulk-generated yet. Run a small
-Sarvam smoke batch and review it before scaling.
+leakage checks. A multilingual eight-row Sarvam smoke batch passed. The current
+v0.3 clean manifest contains 2,400/2,400 readable 8 kHz WAV files (1,620 train,
+390 dev, 390 test). The resumable bulk generation used seven configured
+Sarvam key slots and completed after earlier HTTP 429 and HTTP 402 responses.
+The clean, baseline-noisy, and expanded-robustness synthetic-audio gates are
+passed; do not mark overall readiness passed until public-label review and
+evaluation-manifest freezing are complete. The expanded suite contains 12,390
+files across Gaussian, synthetic colored-noise, approximate telephone-channel,
+and unseen-combination conditions. Its environmental conditions are proxies,
+not real recordings, and it does not establish real-world caller performance.
 
 New reproducibility tools:
 
 - `scripts/validate_dataset.py` checks source invariants, manifest references,
   WAV format, checksums, split counts, voice leakage, and cluster leakage.
 - `scripts/degrade_audio.py` creates deterministic 8 kHz noisy variants with
-  documented SNR, clipping, reverb, dropout, and random seed metadata.
+  documented condition, SNR, clipping, reverb, dropout, and random seed
+  metadata. Keep the `unseen_combined` condition test-only when using it as a
+  final robustness check.
 
 The direct audio-to-intent model remains a hypothesis. Do not claim superiority
 over the Saaras ASR cascade until both systems are evaluated on the same frozen
 synthetic/public-only test sets.
 
+The modelling phase begins with `scripts/run_saaras_baseline.py`, which caches
+Saaras transcripts and fits a character 3-5 gram TF-IDF logistic-regression
+classifier. No baseline metric is trusted until Saaras transcripts have been
+generated from the frozen ASR pool and evaluated using the frozen train,
+calibration, and final-test manifests.
+
 ## Current data assets and completed work
 
 ### Source utterance CSV
 
-[utterances_v0.2.csv](./utterances_v0.2.csv) is the current text-label source:
+[dataset/source/utterances_v0.2.csv](./dataset/source/utterances_v0.2.csv) is the current text-label source:
 
 - 100 rows total
 - 70 banking-intent examples
@@ -153,7 +169,7 @@ The CSV language set is `bn-IN`, `en-IN`, `gu-IN`, `hi-IN`, `kn-IN`, `mr-IN`,
 
 ### Generated synthetic audio
 
-[dataset_v0.2/](./dataset_v0.2) contains the generated Bulbul pilot:
+[dataset/synthetic/v0.2/](./dataset/synthetic/v0.2) contains the generated Bulbul pilot:
 
 - 198 WAV files from 98 TTS rows with two voice variants
 - Sarvam Bulbul v3
@@ -170,7 +186,7 @@ full paraphrase-cluster split.
 
 ### IndicVoices filtered subset
 
-[indicvoices_filtered/](./indicvoices_filtered) contains the current
+[dataset/indicvoices/filtered/](./dataset/indicvoices/filtered) contains the current
 language-restricted, assignment-filtered IndicVoices subset:
 
 - source: `ai4bharat/IndicVoices`
@@ -244,6 +260,9 @@ assignment label.
 - [scripts/filter_indicvoices.py](./scripts/filter_indicvoices.py): streams
   gated IndicVoices annotations and audio, keeps only configured languages and
   assignment-related records, writes audio plus labeled manifests.
+- [scripts/curate_indicvoices.py](./scripts/curate_indicvoices.py): creates a
+  separate conservative candidate manifest using intent-specific evidence and
+  explicit exclusion reasons; it never overwrites the source manifest.
 
 Run the IndicVoices filter with the `torch26` conda environment and a local
 `HF_TOKEN` in `.env`:
@@ -252,10 +271,10 @@ Run the IndicVoices filter with the `torch26` conda environment and a local
 $env:HF_TOKEN = (Get-Content .env | `
   Where-Object { $_ -match '^HF_TOKEN=' }) -replace '^HF_TOKEN=', ''
 
-& 'C:\Users\ACER\anaconda3\envs\torch26\python.exe' -X utf8 `
+conda run -n torch26 python -X utf8 `
   scripts\filter_indicvoices.py `
-  --utterances utterances_v0.2.csv `
-  --output indicvoices_filtered `
+  --utterances dataset/source/utterances_v0.2.csv `
+  --output dataset/indicvoices/filtered `
   --splits valid
 ```
 
@@ -267,6 +286,10 @@ print them, or place them in manifests.
 - Keep language, script, mix, TTS voice, and source dataset as separate metadata.
 - Keep the original CSV and original IndicVoices annotations unchanged.
 - Treat keyword-derived IndicVoices intents as candidates requiring review.
+- Treat the curated IndicVoices manifest as unreviewed candidates, not ground
+  truth. The current pass retains 346/1,915 records and has no defensible
+  candidates for `block_card`, `complaint_status`, or `branch_timing`; do not
+  score those public intents as zero.
 - Do not use `other` records as positive intent examples.
 - Do not collect or require real-speaker data in this project scope.
 - Maintain speaker-disjoint and voice-disjoint evaluation splits.

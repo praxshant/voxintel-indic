@@ -92,6 +92,17 @@ def validate_manifest(path: Path, root: Path) -> tuple[list[str], dict[str, Any]
         if split not in SPLITS:
             errors.append(f"invalid manifest split {split!r} for {row.get('id')}")
         counts[split] += 1
+        degradation = row.get("degradation", "")
+        if degradation:
+            try:
+                condition = json.loads(str(degradation)).get("condition")
+            except json.JSONDecodeError:
+                errors.append(f"invalid degradation metadata for {row.get('id')}")
+                condition = None
+            if condition == "unseen_combined" and split != "test":
+                errors.append(
+                    f"unseen_combined must be test-only: {row.get('id')} is {split}"
+                )
         speaker = str(row.get("speaker", ""))
         if speaker:
             speakers_by_split[split].add(speaker)
@@ -130,10 +141,13 @@ def validate_manifest(path: Path, root: Path) -> tuple[list[str], dict[str, Any]
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", type=Path, default=Path("utterances_v0.3.csv"))
+    repo_root = Path(__file__).resolve().parents[1]
+    parser.add_argument("--source", type=Path,
+                        default=repo_root / "dataset" / "source" / "utterances_v0.3.csv")
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--manifest-root", type=Path)
-    parser.add_argument("--report", type=Path, default=Path("data_readiness_validation.json"))
+    parser.add_argument("--report", type=Path,
+                        default=repo_root / "dataset" / "reports" / "data_readiness_validation.json")
     args = parser.parse_args()
 
     errors = validate_source(load_csv(args.source))

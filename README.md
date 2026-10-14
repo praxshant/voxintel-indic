@@ -1,97 +1,123 @@
 # VoxIntel Indic
 
-VoxIntel Indic is a reproducible speech-to-intent research pipeline for noisy,
-code-mixed Indic telephone speech. It compares a Saaras ASR-to-text classifier
-against a direct audio-to-intent model, with an explicit `other` class and
-reject gate.
+VoxIntel Indic is a reproducible research project for noisy, code-mixed Indic
+speech-to-intent classification. It compares a Saaras ASR-to-text classifier
+with a direct audio-to-intent model, using an explicit `other` class and reject
+gate.
+
+## Repository layout
+
+- [`dataset/`](./dataset/): source text, clean/noisy synthetic audio,
+  IndicVoices data, manifests, reports, documentation, and assignment plan.
+- [`scripts/`](./scripts/): reproducible data-generation, filtering,
+  degradation, audit, and validation tools.
+- [`reports/`](./reports/): reserved for future research reports.
+- [`notebooks/`](./notebooks/): reserved for reproducible analysis notebooks.
+- [`CLAUDE.md`](./CLAUDE.md): project instructions and assignment context.
+- [`requirements.txt`](./requirements.txt): Python package requirements.
+
+The root intentionally contains only repository configuration and setup
+documentation. `.env` is local-only and ignored by Git.
 
 ## Evaluation boundary
 
-This repository uses synthetic speech and curated public data only. It does not
-recruit speakers or require a real-speaker test set. Results must be reported
-separately for synthetic and public data and cannot establish performance on
-real-world callers. Direct audio-to-intent superiority remains an unproven
-hypothesis.
+This project uses synthetic speech and curated public data only. It does not
+recruit speakers or require a real-speaker test set. Synthetic and public-data
+results must remain separate and cannot establish real-world caller
+performance. Direct audio-to-intent superiority remains an unproven hypothesis.
 
-## Current data
+## Current state
 
-- `utterances_v0.2.csv`: preserved 100-row pilot source.
-- `utterances_v0.3.csv`: 2,400-row candidate source with 1,800 in-scope and
-  600 `other` rows; source validation passes.
-- `dataset_v0.2/`: 198 validated Bulbul v3 WAV files.
-- `indicvoices_filtered/`: 1,915 IndicVoices FLAC files with weak,
-  keyword-derived assignment labels. These labels are not verified ground
-  truth, and the CSV manifest explicitly records `label_provenance` and
-  `review_status`. English is not covered by this subset.
-- v0.3 bulk audio is intentionally not committed or generated until a small
-  TTS smoke batch is reviewed.
+See [`dataset/README.md`](./dataset/README.md) for measured counts and
+validation details. In brief:
 
-## Reproduce the checks
+- v0.2 source: 100 rows, preserved unchanged.
+- v0.3 source: 2,400 candidate rows with cluster-disjoint intended splits.
+- v0.2 synthetic audio: 198 validated 8 kHz mono WAV files.
+- IndicVoices source subset: 1,915 FLAC records and original annotations,
+  preserved as an audit source.
+- IndicVoices curated candidate subset: 346 records retained by conservative
+  intent-specific evidence; all remain unreviewed and excluded from trusted
+  metrics.
+- v0.3 clean audio: 2,400/2,400 files generated and validated across seven
+  configured key slots.
+- v0.3 noisy audio: 4,800 deterministic variants generated and validated at
+  10 dB and 20 dB SNR.
+- v0.3 robustness suite: 12,390/12,390 deterministic variants generated and
+  validated across six documented conditions; `unseen_combined` is test-only
+  in the regenerated manifest.
+- Evaluation manifests are frozen under `dataset/manifests/evaluation/`.
+- The Saaras plus character n-gram logistic-regression baseline is implemented
+  in `scripts/run_saaras_baseline.py`; actual metrics remain pending ASR
+  transcript generation.
+- The frozen public trusted manifest has zero rows until IndicVoices labels
+  receive explicit human review; unreviewed keyword candidates are not metrics.
+- Public candidates currently cover `balance`, `pay_bill`, `emi_due`,
+  `recent_transactions`, `report_fraud`, `update_details`, `transfer_to_agent`,
+  and explicit `other`. There are no defensible public candidates yet for
+  `block_card`, `complaint_status`, or `branch_timing`.
+
+## Reproduce checks
+
+The scripts resolve their default paths from the repository root, so commands
+are reproducible even when launched from another directory:
 
 ```powershell
-& 'C:\Users\ACER\anaconda3\python.exe' scripts\generate_utterances_v03.py `
-  --output utterances_v0.3.csv
+python scripts\generate_utterances_v03.py
+python scripts\validate_dataset.py
 
-& 'C:\Users\ACER\anaconda3\python.exe' scripts\validate_dataset.py `
-  --source utterances_v0.3.csv `
-  --report v0.3_source_validation.json
+python scripts\validate_dataset.py `
+  --source dataset\source\utterances_v0.2.csv `
+  --manifest dataset\synthetic\v0.2\manifest.csv `
+  --manifest-root dataset\synthetic\v0.2 `
+  --report dataset\reports\v0.2_validation.json
 
-& 'C:\Users\ACER\anaconda3\python.exe' scripts\validate_dataset.py `
-  --source utterances_v0.2.csv `
-  --manifest dataset_v0.2\manifest.csv `
-  --manifest-root dataset_v0.2 `
-  --report v0.2_validation.json
+conda run -n torch26 python scripts\audit_indicvoices.py `
+  --manifest dataset\indicvoices\filtered\manifest.csv `
+  --report dataset\reports\indicvoices_audit.json
 ```
 
-## Generate synthetic audio
+## Synthetic audio generation
 
-Set `SARVAM_API_KEY` in the local `.env` file. Never commit `.env`, generated
-audio, or API credentials. Run a small smoke batch first:
+Set `SARVAM_API_KEY` and any numbered `SARVAM_API_KEY_N` variables only in the
+local root `.env`. The generator discovers numbered keys automatically, but
+does not treat them as independent quotas. Run a small smoke batch
+before any larger operation:
 
 ```powershell
-& 'C:\Users\ACER\anaconda3\python.exe' scripts\generate_dataset.py `
-  --csv utterances_v0.3.csv `
-  --output dataset_v0.3_smoke `
+python scripts\generate_dataset.py `
+  --csv dataset\source\utterances_v0.3.csv `
+  --output dataset\synthetic\v0.3_smoke `
   --speakers shubh simran aditya `
-  --variants 1
+  --variants 1 `
+  --max-rows 8
 ```
 
-The generator is resumable, writes checksums and provenance manifests, and
-assigns v0.3 splits from the precomputed paraphrase-cluster split.
-
-Audit the public manifest without changing audio:
+Then create deterministic degraded variants:
 
 ```powershell
-& 'C:\Users\ACER\anaconda3\envs\torch26\python.exe' scripts\audit_indicvoices.py `
-  --manifest indicvoices_filtered\manifest.csv `
-  --report indicvoices_audit.json `
-  --annotate
-```
-
-## Create noisy variants
-
-After clean WAV generation:
-
-```powershell
-& 'C:\Users\ACER\anaconda3\python.exe' scripts\degrade_audio.py `
-  --manifest dataset_v0.3_smoke\manifest.csv `
-  --output dataset_v0.3_smoke_noisy `
+python scripts\degrade_audio.py `
+  --manifest dataset\synthetic\v0.3_smoke\manifest.csv `
+  --output dataset\synthetic\v0.3_smoke_noisy `
   --snr-db 10 20
+
+python scripts\degrade_audio.py `
+  --manifest dataset\synthetic\v0.3\manifest.csv `
+  --output dataset\synthetic\v0.3_robustness `
+  --suite robustness
+
+python scripts\validate_dataset.py `
+  --source dataset\source\utterances_v0.3.csv `
+  --manifest dataset\synthetic\v0.3_robustness\manifest.csv `
+  --manifest-root dataset\synthetic\v0.3_robustness `
+  --report dataset\reports\v0.3_robustness_validation.json
+
+python scripts\freeze_evaluation_manifests.py
+
+python scripts\spot_check_synthetic.py
+
+python scripts\curate_indicvoices.py
 ```
 
-Each degraded record stores its source path, SNR, clipping, reverb, dropout,
-and deterministic seed.
-
-## IndicVoices
-
-IndicVoices is gated on Hugging Face and is downloaded with the `torch26`
-environment using `HF_TOKEN`. The local filter preserves original annotations
-and audio provenance, then adds clearly marked weak assignment labels. See
-[`indicvoices_filtered/README.md`](./indicvoices_filtered/README.md).
-
-## Documentation
-
-- [`CLAUDE.md`](./CLAUDE.md): assignment interpretation and project rules.
-- [`DATASET_CARD.md`](./DATASET_CARD.md): provenance, intended use, and limits.
-- [`DATA_READINESS_REPORT.md`](./DATA_READINESS_REPORT.md): current measured
-  counts and validation status.
+Do not commit `.env`, API keys, or large generated audio unless project policy
+explicitly changes.

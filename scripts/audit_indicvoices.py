@@ -11,8 +11,11 @@ from pathlib import Path
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--manifest", type=Path, default=Path("indicvoices_filtered/manifest.csv"))
-    parser.add_argument("--report", type=Path, default=Path("indicvoices_audit.json"))
+    repo_root = Path(__file__).resolve().parents[1]
+    parser.add_argument("--manifest", type=Path,
+                        default=repo_root / "dataset" / "indicvoices" / "filtered" / "manifest.csv")
+    parser.add_argument("--report", type=Path,
+                        default=repo_root / "dataset" / "reports" / "indicvoices_audit.json")
     parser.add_argument("--annotate", action="store_true",
                         help="Add explicit weak-label provenance and review fields to the manifest.")
     args = parser.parse_args()

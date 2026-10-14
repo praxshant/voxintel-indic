@@ -2,8 +2,9 @@
 
 The script keeps the source CSV as the label source of truth. TTS rows are
 sent to Sarvam's REST API, while explicit silence/noise rows are generated
-locally. API keys are read from SARVAM_API_KEY or a local .env file and are
-never written to output files.
+locally. API keys are read from SARVAM_API_KEY, SARVAM_API_KEY_2, and subsequent
+numbered variables in the local .env file. Exhausted or invalid keys are
+skipped for the remainder of a run; values are never written to output files.
 """
 
 from __future__ import annotations
@@ -43,8 +44,11 @@ SPEAKERS = {
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--csv", type=Path, default=Path("utterances_v0.2.csv"))
-    parser.add_argument("--output", type=Path, default=Path("dataset_v0.2"))
+    repo_root = Path(__file__).resolve().parents[1]
+    parser.add_argument("--csv", type=Path,
+                        default=repo_root / "dataset" / "source" / "utterances_v0.2.csv")
+    parser.add_argument("--output", type=Path,
+                        default=repo_root / "dataset" / "synthetic" / "v0.2")
     parser.add_argument("--model", default="bulbul:v3")
     parser.add_argument("--speakers", nargs="+", default=["shubh", "simran"])
     parser.add_argument("--sample-rate", type=int, default=8000)
@@ -52,6 +56,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--variants", type=int, default=1)
     parser.add_argument("--retries", type=int, default=3)
     parser.add_argument("--sleep-seconds", type=float, default=1.0)
+    parser.add_argument("--max-rows", type=int,
+                        help="Limit source rows for a smoke test; omitted means all rows.")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--force", action="store_true")
     return parser.parse_args()
@@ -115,7 +121,7 @@ def create_special_audio(row_id: str, sample_rate: int) -> bytes:
 
 
 def sarvam_audio(
-    api_key: str,
+    api_keys: list[str],
     text: str,
     language_code: str,
     model: str,
@@ -123,6 +129,7 @@ def sarvam_audio(
     sample_rate: int,
     pace: float,
     retries: int,
+    exhausted_keys: set[int],
 ) -> bytes:
     payload = json.dumps({
         "text": text,
@@ -132,16 +139,22 @@ def sarvam_audio(
         "speech_sample_rate": sample_rate,
         "pace": pace,
     }).encode("utf-8")
-    request = urllib.request.Request(
-        API_URL,
-        data=payload,
-        headers={
-            "Content-Type": "application/json",
-            "api-subscription-key": api_key,
-        },
-        method="POST",
-    )
-    for attempt in range(1, retries + 1):
+    attempts = max(retries, len(api_keys))
+    for attempt in range(1, attempts + 1):
+        available = [index for index in range(len(api_keys)) if index not in exhausted_keys]
+        if not available:
+            raise RuntimeError("All configured Sarvam API keys are exhausted or invalid.")
+        key_index = available[(attempt - 1) % len(available)]
+        api_key = api_keys[key_index]
+        request = urllib.request.Request(
+            API_URL,
+            data=payload,
+            headers={
+                "Content-Type": "application/json",
+                "api-subscription-key": api_key,
+            },
+            method="POST",
+        )
         try:
             with urllib.request.urlopen(request, timeout=90) as response:
                 body = json.loads(response.read().decode("utf-8"))
@@ -149,9 +162,22 @@ def sarvam_audio(
             if not isinstance(audios, list) or not audios or not isinstance(audios[0], str):
                 raise ValueError("Sarvam response did not contain an audio payload.")
             return base64.b64decode(audios[0])
-        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError) as exc:
-            if attempt == retries:
-                raise RuntimeError(f"Sarvam request failed after {retries} attempts: {exc}") from exc
+        except urllib.error.HTTPError as exc:
+            if exc.code in {401, 402, 403}:
+                exhausted_keys.add(key_index)
+            if attempt == attempts:
+                raise RuntimeError(
+                    f"Sarvam request failed after {attempts} attempts (HTTP {exc.code})."
+                ) from exc
+            retry_after = exc.headers.get("Retry-After", "0")
+            try:
+                delay = max(2, int(retry_after or 0)) if exc.code == 429 else 1
+            except ValueError:
+                delay = attempt * 2 if exc.code == 429 else 1
+            time.sleep(delay or attempt * 2)
+        except (urllib.error.URLError, TimeoutError, ValueError) as exc:
+            if attempt == attempts:
+                raise RuntimeError(f"Sarvam request failed after {attempts} attempts: {exc}") from exc
             time.sleep(attempt * 2)
     raise AssertionError("unreachable")
 
@@ -199,6 +225,7 @@ def speaker_for_row(row: dict[str, str], variant: int, speakers: list[str]) -> s
 
 def main() -> None:
     args = parse_args()
+    repo_root = Path(__file__).resolve().parents[1]
     if args.sample_rate not in {8000, 16000, 22050, 24000, 32000, 44100, 48000}:
         raise ValueError("Unsupported sample rate.")
     if args.variants < 1:
@@ -207,22 +234,36 @@ def main() -> None:
         raise ValueError(f"Unknown speaker. Supported v3 examples: {', '.join(sorted(SPEAKERS))}")
 
     rows = read_rows(args.csv)
-    dotenv = load_dotenv(args.csv.parent / ".env")
-    api_key = os.environ.get("SARVAM_API_KEY") or dotenv.get("SARVAM_API_KEY", "")
+    dotenv = load_dotenv(repo_root / ".env")
+    key_values: list[str] = []
+    for suffix in [""] + [f"_{index}" for index in range(2, 100)]:
+        name = f"SARVAM_API_KEY{suffix}"
+        value = os.environ.get(name) or dotenv.get(name, "")
+        if value:
+            key_values.append(value)
+    api_keys = key_values
     tts_rows = [row for row in rows if row["source"] == "tts"]
     local_rows = [row for row in rows if row["source"] != "tts"]
+    if args.max_rows is not None:
+        if args.max_rows < 1:
+            raise ValueError("--max-rows must be positive.")
+        rows = rows[:args.max_rows]
+        tts_rows = [row for row in rows if row["source"] == "tts"]
+        local_rows = [row for row in rows if row["source"] != "tts"]
     print(f"Rows: {len(rows)} total; {len(tts_rows)} TTS; {len(local_rows)} local audio")
     print(f"Languages: {', '.join(sorted({row['language_code'] for row in tts_rows}))}")
     print(f"Output: {args.output.resolve()}")
     if args.dry_run:
         return
-    if not api_key:
+    if not api_keys:
         raise RuntimeError("Set SARVAM_API_KEY in the environment or .env before generating audio.")
 
     audio_dir = args.output / "audio"
     audio_dir.mkdir(parents=True, exist_ok=True)
     errors_path = args.output / "errors.jsonl"
     manifest: list[dict[str, Any]] = []
+    exhausted_keys: set[int] = set()
+    failed_rows = 0
     for row in rows:
         variants = range(args.variants) if row["source"] == "tts" else range(1)
         for variant in variants:
@@ -236,19 +277,25 @@ def main() -> None:
                 try:
                     if row["source"] == "tts":
                         audio = sarvam_audio(
-                            api_key, row["text"], row["language_code"], args.model,
+                            api_keys, row["text"], row["language_code"], args.model,
                             speaker, args.sample_rate, args.pace, args.retries,
+                            exhausted_keys,
                         )
                     else:
                         audio = create_special_audio(row["id"], args.sample_rate)
                     path.write_bytes(audio)
                 except (OSError, RuntimeError, ValueError) as exc:
+                    failed_rows += 1
                     with errors_path.open("a", encoding="utf-8") as error_handle:
                         error_handle.write(json.dumps({
                             "id": row["id"], "variant": variant + 1,
                             "speaker": speaker, "error": str(exc),
                         }, ensure_ascii=False) + "\n")
-                    raise
+                    if row["source"] == "tts" and not [index for index in range(len(api_keys))
+                                                        if index not in exhausted_keys]:
+                        print("No usable Sarvam API keys remain; stopping generation.")
+                        break
+                    continue
                 if not is_valid_wav(path, args.sample_rate):
                     raise RuntimeError(f"Generated file failed WAV validation: {path}")
                 if row["source"] == "tts":
@@ -270,6 +317,10 @@ def main() -> None:
                 "source_split": row.get("intended_split", ""),
                 "sha256": sha256(path),
             })
+        else:
+            continue
+        if not [index for index in range(len(api_keys)) if index not in exhausted_keys]:
+            break
 
     args.output.mkdir(parents=True, exist_ok=True)
     with (args.output / "manifest.jsonl").open("w", encoding="utf-8") as handle:
@@ -286,7 +337,10 @@ def main() -> None:
         "sample_rate": args.sample_rate,
         "voices": args.speakers,
         "variants": args.variants,
+        "api_key_slots": len(api_keys),
         "rows": len(manifest),
+        "failed_rows": failed_rows,
+        "exhausted_key_slots": sorted(exhausted_keys),
         "splits": {split: sum(item["split"] == split for item in manifest) for split in ("train", "dev", "test")},
         "languages": sorted({item["language_code"] for item in manifest}),
     }

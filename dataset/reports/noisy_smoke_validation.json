@@ -1,0 +1,21 @@
+{
+  "source": "dataset\\source\\utterances_v0.2.csv",
+  "source_rows": 100,
+  "manifest": {
+    "rows": 4,
+    "split_counts": {
+      "train": 2,
+      "test": 2
+    },
+    "voices_by_split": {
+      "train": [
+        "shubh"
+      ],
+      "test": [
+        "simran"
+      ]
+    }
+  },
+  "errors": [],
+  "passed": true
+}

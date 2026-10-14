@@ -1,0 +1,22 @@
+{
+  "source_manifest": "C:\\Users\\ACER\\OneDrive\\Desktop\\VoxIntel Indic\\dataset\\indicvoices\\filtered\\manifest.csv",
+  "source_manifest_sha256": "49b861a27b0303172b9cc144f913e3343f519591f403ced8d5d7c0c41cb70367",
+  "source_rows": 1915,
+  "included_rows": 346,
+  "excluded_rows": 1569,
+  "included_by_intent": {
+    "pay_bill": 102,
+    "other": 36,
+    "balance": 113,
+    "recent_transactions": 27,
+    "emi_due": 32,
+    "report_fraud": 22,
+    "update_details": 9,
+    "transfer_to_agent": 5
+  },
+  "excluded_by_reason": {
+    "no_actionable_intent_evidence": 1560,
+    "conflicting_intent_evidence": 9
+  },
+  "policy": "Included rows are deterministic candidates only. They are not trusted evaluation labels until human review approves the transcript and intent. Original manifest and audio are preserved."
+}

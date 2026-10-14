@@ -75,8 +75,11 @@ KEYWORDS: dict[str, tuple[str, ...]] = {
 
 def args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--utterances", type=Path, default=Path("utterances_v0.2.csv"))
-    parser.add_argument("--output", type=Path, default=Path("indicvoices_filtered"))
+    repo_root = Path(__file__).resolve().parents[1]
+    parser.add_argument("--utterances", type=Path,
+                        default=repo_root / "dataset" / "source" / "utterances_v0.2.csv")
+    parser.add_argument("--output", type=Path,
+                        default=repo_root / "dataset" / "indicvoices" / "filtered")
     parser.add_argument("--splits", nargs="+", default=["valid"], choices=["valid", "train"])
     parser.add_argument("--limit-per-language", type=int, default=0)
     parser.add_argument("--min-keyword-hits", type=int, default=1)
@@ -157,10 +160,11 @@ def sha256_bytes(data: bytes) -> str:
 
 def main() -> None:
     options = args()
+    repo_root = Path(__file__).resolve().parents[1]
     requested_codes = source_languages(options.utterances)
     configs = {code: LANGUAGE_CONFIGS[code] for code in requested_codes if code in LANGUAGE_CONFIGS}
     skipped = [code for code in requested_codes if code not in LANGUAGE_CONFIGS]
-    token = os.environ.get("HF_TOKEN") or dotenv_value(options.utterances.parent / ".env", "HF_TOKEN")
+    token = os.environ.get("HF_TOKEN") or dotenv_value(repo_root / ".env", "HF_TOKEN")
     if not token:
         raise RuntimeError("Set HF_TOKEN in the environment or project .env file.")
 

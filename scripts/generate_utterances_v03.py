@@ -244,7 +244,9 @@ def build_rows() -> list[dict[str, str]]:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--output", type=Path, default=Path("utterances_v0.3.csv"))
+    repo_root = Path(__file__).resolve().parents[1]
+    parser.add_argument("--output", type=Path,
+                        default=repo_root / "dataset" / "source" / "utterances_v0.3.csv")
     args = parser.parse_args()
     rows = build_rows()
     args.output.parent.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,80 @@
+{
+  "version": "v0.3-evaluation-freeze-2026-10-14",
+  "source_manifest": "dataset/synthetic/v0.3_robustness/manifest.csv",
+  "source_manifest_sha256": "d1e4a49de2cf0df7387f02cc045d7cc9030505796c0af3fa66dcd4ffb4ad77b3",
+  "split_rule": "Paraphrase clusters are assigned to exactly one source split before TTS. Synthetic voices are disjoint by split: shubh/train, simran/dev, aditya/test.",
+  "training_policy": "Train only on synthetic_train. Do not use synthetic_calibration or synthetic_final_test for fitting.",
+  "calibration_policy": "Tune thresholds and reject-gate parameters only on synthetic_calibration.",
+  "final_test_policy": "Evaluate once on synthetic_final_test after model and threshold selection. unseen_combined is test-only.",
+  "public_data_policy": "IndicVoices records with review_status=unreviewed and label_provenance=keyword_derived_candidate are excluded from trusted metrics until human review.",
+  "manifests": {
+    "synthetic_train": {
+      "path": "dataset/manifests/evaluation/synthetic_train.csv",
+      "sha256": "c11b8ef1ac933fa5ad22eaa11141057dfbc7f3c7aafc7a29252e851286ece885",
+      "rows": 8100,
+      "split": [
+        "train"
+      ],
+      "conditions": [
+        "gaussian_snr10",
+        "gaussian_snr20",
+        "office_snr15",
+        "telephone_channel",
+        "traffic_snr15"
+      ],
+      "unseen_combined_allowed": false
+    },
+    "synthetic_calibration": {
+      "path": "dataset/manifests/evaluation/synthetic_calibration.csv",
+      "sha256": "6d62450f15ce9563168c42775504b0db08ebc985723926f6b4073cb1ccbed748",
+      "rows": 1950,
+      "split": [
+        "dev"
+      ],
+      "conditions": [
+        "gaussian_snr10",
+        "gaussian_snr20",
+        "office_snr15",
+        "telephone_channel",
+        "traffic_snr15"
+      ],
+      "unseen_combined_allowed": false
+    },
+    "synthetic_final_test": {
+      "path": "dataset/manifests/evaluation/synthetic_final_test.csv",
+      "sha256": "0964958565d2a434ba968a0fd85e337a97759bec48d90108c1705560b77ca4d1",
+      "rows": 2340,
+      "split": [
+        "test"
+      ],
+      "conditions": [
+        "gaussian_snr10",
+        "gaussian_snr20",
+        "office_snr15",
+        "telephone_channel",
+        "traffic_snr15",
+        "unseen_combined"
+      ],
+      "unseen_combined_allowed": true
+    },
+    "synthetic_asr_pool": {
+      "path": "dataset/manifests/evaluation/synthetic_asr_pool.csv",
+      "sha256": "d1e4a49de2cf0df7387f02cc045d7cc9030505796c0af3fa66dcd4ffb4ad77b3",
+      "rows": 12390,
+      "purpose": "ASR transcript generation only; classifier roles use the three frozen manifests"
+    },
+    "public_trusted": {
+      "path": "dataset/manifests/evaluation/public_trusted.csv",
+      "sha256": "63bc1ac12926b9c1aa958d6fcb0fb9d56f1d9c0afa54999d3b8a45e26e73c12f",
+      "rows": 0,
+      "source_rows": 1915,
+      "policy": "Only explicitly reviewed labels with non-derived provenance are eligible. Current count is zero until review is completed."
+    },
+    "public_curated_candidates": {
+      "path": "dataset/manifests/evaluation/public_curated_candidates.csv",
+      "sha256": "2f96fd8a25b91eb30fbdaded822340e87095c1b29c244eb07b0ec79a90169350",
+      "rows": 346,
+      "purpose": "Audit and human-review queue only; excluded from trusted metrics until review_status is explicitly reviewed."
+    }
+  }
+}

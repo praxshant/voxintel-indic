@@ -1,0 +1,18 @@
+{
+  "rows": 12390,
+  "snr_db": [
+    10.0,
+    20.0
+  ],
+  "suite": "robustness",
+  "source_manifest": "dataset\\synthetic\\v0.3\\manifest.csv",
+  "conditions": [
+    "gaussian_snr10",
+    "gaussian_snr20",
+    "office_snr15",
+    "telephone_channel",
+    "traffic_snr15",
+    "unseen_combined"
+  ],
+  "note": "Synthetic proxies only; not real-call validation."
+}

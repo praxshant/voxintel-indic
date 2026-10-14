@@ -1,0 +1,8 @@
+﻿{
+    "rows":  4,
+    "snr_db":  [
+                   10.0,
+                   20.0
+               ],
+    "source_manifest":  "dataset/synthetic/v0.2/manifest.csv"
+}

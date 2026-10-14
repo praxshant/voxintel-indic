@@ -1,5 +1,5 @@
 {
-  "manifest": "c:\\Users\\ACER\\OneDrive\\Desktop\\VoxIntel Indic\\indicvoices_filtered\\manifest.csv",
+  "manifest": "dataset\\indicvoices\\filtered\\manifest.csv",
   "rows": 1915,
   "label_counts": {
     "pay_bill": 414,

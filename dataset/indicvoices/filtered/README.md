@@ -25,6 +25,11 @@ Every audio record has these assignment-compatible fields:
 Additional fields retain IndicVoices provenance, speaker metadata, source split,
 matched keyword categories, audio format, and SHA-256 checksum.
 
+The original filtered manifest is an audit source, not a trusted labelled
+evaluation set. The conservative second-pass curation is in
+`dataset/indicvoices/curated/`; it preserves the original record fields and
+adds deterministic evidence, inclusion/exclusion reasons, and review status.
+
 ## Scope
 
 The source CSV languages were mapped as follows:
@@ -43,11 +48,16 @@ The source CSV languages were mapped as follows:
 `und` was skipped because it is unspecified. No unrelated language was
 downloaded.
 
-Only the IndicVoices `valid` split was downloaded in this pass. Records were
-kept when their transcript, normalized transcript, verbatim transcript,
-unsanitized transcript, or task name contained at least one assignment-related
-banking, account, transaction, card, payment, bill, EMI, fraud, complaint,
-customer-support, branch, or profile-update keyword.
+Only the IndicVoices `valid` split was downloaded in this pass. The first pass
+kept records with at least one broad banking-related keyword. That broad pass
+is preserved for audit, but it is not suitable for trusted metrics.
+
+The second pass requires one unambiguous intent-specific phrase across the
+transcript, normalized/verbatim variants, or task annotation. Generic words
+such as `bank`, `account`, or `customer` alone are not sufficient. Explicit
+out-of-domain/chitchat examples may be retained as `other`; silent, general,
+ambiguous, and conflicting records are excluded from the curated candidate
+manifest.
 
 ## Intent assignment
 
@@ -69,9 +79,9 @@ human-verified intent labels:
 
 Ambiguous matches are assigned to `other` with an `other_type` such as
 `ambiguous_in_domain`, `unsupported_near_miss`, or a blank value when the
-assignment is specific enough. Review these labels before using them as
-supervised training data. The original IndicVoices annotation fields remain
-available for audit.
+assignment is specific enough. Review these candidates before using them as supervised training data. The
+curated records remain `unreviewed` and are not trusted ground truth. The
+original IndicVoices annotation fields remain available for audit.
 
 ## Reproduction
 
@@ -81,10 +91,10 @@ Run with the `torch26` environment and a Hugging Face token in `.env`:
 $env:HF_TOKEN = (Get-Content .env | `
   Where-Object { $_ -match '^HF_TOKEN=' }) -replace '^HF_TOKEN=', ''
 
-& 'C:\Users\ACER\anaconda3\envs\torch26\python.exe' -X utf8 `
+conda run -n torch26 python -X utf8 `
   scripts\filter_indicvoices.py `
-  --utterances utterances_v0.2.csv `
-  --output indicvoices_filtered `
+  --utterances dataset\source\utterances_v0.2.csv `
+  --output dataset\indicvoices\filtered `
   --splits valid
 ```
 

@@ -11,7 +11,7 @@ This directory contains the generated speech dataset for the Indic speech-to-int
 
 ## Generation
 
-- Source labels: `../utterances_v0.2.csv`
+- Source labels: `../../source/utterances_v0.2.csv`
 - TTS: Sarvam Bulbul v3 REST API
 - TTS voices:
   - `shubh`: training/dev voice
