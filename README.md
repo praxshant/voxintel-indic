@@ -46,10 +46,27 @@ validation details. In brief:
 - v0.3 robustness suite: 12,390/12,390 deterministic variants generated and
   validated across six documented conditions; `unseen_combined` is test-only
   in the regenerated manifest.
-- Evaluation manifests are frozen under `dataset/manifests/evaluation/`.
-- The Saaras plus character n-gram logistic-regression baseline is implemented
-  in `scripts/run_saaras_baseline.py`; actual metrics remain pending ASR
-  transcript generation.
+- Evaluation manifests are frozen under `dataset/manifests/evaluation/` (14,790 pool rows).
+- Baseline ASR & Classifier Status:
+  - **Saaras (Sarvam ASR)**: Cloud API quota exhausted with HTTP 402 on all configured key slots (`dataset/reports/saaras_baseline.json`). 2,860/14,790 transcripts preserved in `saaras_transcripts.csv`; 11,930 remaining rows blocked.
+  - **Local Multi-Model ASR (`hybrid`)**: Fully completed across all 14,790 pool rows (100.0% coverage) in `dataset/manifests/evaluation/hybrid_transcripts.csv` without fabricating transcripts:
+    - **IndicConformer-600M** (`ai4bharat/indic-conformer-600m-multilingual`, MIT): 11,525 rows across all 7 Indic languages (`hi-IN`, `ta-IN`, `bn-IN`, `te-IN`, `mr-IN`, `gu-IN`, `kn-IN`).
+    - **Whisper-base.en** (`openai/whisper-base.en`, MIT): 3,265 rows for English (`en-IN`).
+    - **Latency**: Median 849.5 ms, Mean 1,167.2 ms, p95 2,286.4 ms on NVIDIA RTX 3050 GPU.
+  - **Classifier & Reject Gate** (`dataset/reports/hybrid_baseline_v2.json`):
+    - Character 3–5-gram TF-IDF (`sublinear_tf=True`, `min_df=2`) + Balanced Logistic Regression trained on 9,720 synthetic training rows.
+    - **Reject threshold** $T = 0.1234$ selected strictly on 2,340 calibration (`dev`) rows at $\ge 90\%$ recall (max-prob signal). Never uses test data.
+    - **Calibration analysis** (calibration split only):
+      - ECE (uncalibrated): 0.0985; Temperature scaling (T=0.5): ECE → 0.0062 (Δ=0.0923); Isotonic regression: ECE → 0.000 (Δ=0.0985).
+      - All three reject signals (max_prob / margin / norm_entropy) achieve 99.94% recall at precision 1.0 at their respective calibration-selected thresholds.
+  - **Measured Evaluation Metrics** (`dataset/reports/hybrid_baseline_v2.json`):
+    - **Clean Final Test** (390 rows): Accuracy = 1.0000, In-Scope Accuracy = 1.0000, 95% CI: [1.0, 1.0].
+    - **Robust Final Test** (2,340 rows): Accuracy = 0.9996, In-Scope Accuracy = 0.9994, 95% CI: [0.9987, 1.0].
+    - **Unseen Combined Condition** (`unseen_combined`, strictly test-only, 390 rows): Accuracy = 0.9974, In-Scope Accuracy = 0.9967, 95% CI: [0.9923, 1.0].
+    - **Rejection & Other False Accept Rate**: Coverage = 0.7692, Abstention = 0.2308, False Accept Rate on `other` = 0.0000 across all five `other_type` categories.
+    - **Risk–Coverage (clean test)**: AURC ≈ 0.000 for all three signals. Selective accuracy: 80% cov → 1.0000, 90% cov → 1.0000, 95% cov → 1.0000.
+    - **False-accept by `other_type` at fixed coverage**: 0.0000 for all five categories at 80%, 90%, and 95% coverage targets.
+    - **Per-language (clean test)**: bn-IN 97.5% acc/100% cov; en-IN 100% acc/47.1% cov; gu-IN, kn-IN, mr-IN, ta-IN, te-IN all 100% acc/100% cov; hi-IN 100% acc/47.1% cov.
 - The frozen public trusted manifest has zero rows until IndicVoices labels
   receive explicit human review; unreviewed keyword candidates are not metrics.
 - Public candidates currently cover `balance`, `pay_bill`, `emi_due`,
@@ -117,6 +134,30 @@ python scripts\freeze_evaluation_manifests.py
 python scripts\spot_check_synthetic.py
 
 python scripts\curate_indicvoices.py
+```
+
+## ASR baseline & testing
+
+Run the deterministic IndicConformer smoke test, resumable transcription, or unit tests:
+
+```powershell
+# 1. Deterministic smoke test across languages & conditions (~9 files)
+conda run -n torch26 python scripts\smoke_test_indicconformer.py
+
+# 2. Resumable hybrid transcription (IndicConformer + Whisper) in bounded batches
+conda run -n torch26 python scripts\run_saaras_baseline.py `
+  --provider hybrid `
+  --transcribe `
+  --max-new 500
+
+# 3. Fit classifier, run calibration analysis & risk-coverage evaluation
+conda run -n torch26 python scripts\run_saaras_baseline.py `
+  --provider hybrid `
+  --output dataset\reports\hybrid_baseline_v2.json
+
+# 4. Run test suite and dataset validator
+conda run -n torch26 python -m pytest tests -q
+conda run -n torch26 python scripts\validate_dataset.py
 ```
 
 Do not commit `.env`, API keys, or large generated audio unless project policy

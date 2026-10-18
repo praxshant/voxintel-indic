@@ -53,9 +53,24 @@ Speaker and voice disjoint splits are required. Overall accuracy is not enough; 
 ## Architecture
 
 ### Baseline
-The baseline uses Saaras ASR on every test clip, followed by a text intent classifier.
+The baseline uses an ASR transcript followed by a character n-gram text intent classifier and a rejection gate. ASR providers supported via `scripts/run_saaras_baseline.py`:
 
-The first text model is a lightweight character n-gram logistic regression. If time allows, a stronger text encoder such as MuRIL or IndicBERT may be used.
+1. **Saaras (Sarvam ASR `saarika:v2.5`)**: Cloud API. Quota-blocked across all configured keys (HTTP 402; 2,860/14,790 transcripts preserved).
+2. **IndicConformer-600M (AI4Bharat `indic-conformer-600m-multilingual`)**: Local PyTorch backend via Hugging Face (`trust_remote_code=True`, MIT license). Transcribes the 7 Indic languages (11,525 rows).
+3. **Whisper-base.en (OpenAI `whisper-base.en`)**: Local PyTorch backend (MIT license). Transcribes English (`en-IN`, 3,265 rows).
+4. **Hybrid Multi-Model ASR**: Combined local pipeline that routes each language to its designated model. 100% completed across all 14,790 frozen pool rows (`hybrid_transcripts.csv`).
+
+The text classifier uses character n-grams (range 3–5, TF-IDF, `sublinear_tf=True`, `min_df=2`) with balanced class-weight Logistic Regression across the 10 banking intents plus `other`. The reject threshold ($T = 0.1234$) is chosen strictly on calibration (`dev`, 2,340 rows) data at $\ge 90\%$ recall, never using final test rows.
+
+Measured Results (`dataset/reports/hybrid_baseline_v2.json`):
+- **Clean Final Test** (390 rows): Accuracy = 1.0000, In-Scope Accuracy = 1.0000, 95% CI: [1.0, 1.0].
+- **Robust Final Test** (2,340 rows): Accuracy = 0.9996, In-Scope Accuracy = 0.9994, 95% CI: [0.9987, 1.0].
+- **Held-Out Combined** (`unseen_combined` test-only, 390 rows): Accuracy = 0.9974, In-Scope Accuracy = 0.9967, 95% CI: [0.9923, 1.0].
+- **Rejection & Other Security**: Coverage = 0.7692, Abstention = 0.2308, False Accept Rate on `other` = 0.0000 across all five `other_type` categories.
+- **Calibration** (calibration split, never test): ECE uncalibrated = 0.0985; Temperature scaling (T=0.5) → ECE 0.0062; Isotonic regression → ECE 0.000.
+- **Risk–Coverage (clean test, max_prob signal)**: AURC ≈ 0.000. Selective accuracy: 80% cov = 1.0000, 90% cov = 1.0000, 95% cov = 1.0000.
+- **False-accept at fixed coverage targets**: 0.0000 for all five `other_type` categories at 80%, 90%, and 95% coverage.
+- **Signal comparison (calibration split)**: max_prob / margin / norm_entropy each select threshold achieving 99.94% recall at precision 1.0.
 
 ### End-to-end path
 The proposed end-to-end model uses:
@@ -68,15 +83,16 @@ The proposed end-to-end model uses:
 
 The encoder sees telephone-band audio; 8 kHz audio is upsampled before processing, but the model still operates on telephone-band content. The reject gate decides whether the predicted intent is safe to act on, or whether the input should be routed to clarify/fallback instead.
 
-### Reject gate
-The reject gate is core to the project. It evaluates uncertain or out-of-scope inputs and prevents false triggers. Typical signals include:
+### Reject gate (implemented for baseline)
+The reject gate is implemented for the ASR+classifier baseline. Current signals:
 
-- maximum probability
-- margin between top predictions
-- entropy
-- energy score
-- distance from embedding to intent centroids
-- agreement across noisy copies of the same audio
+- **max_prob**: Maximum softmax probability. Current operating threshold: T=0.1234.
+- **margin**: P_top1 − P_top2 (decision-boundary margin). Threshold: 0.0137 on calibration split.
+- **norm_entropy**: 1 − H/log(K) (normalised Shannon entropy, higher = more confident). Threshold: 0.0065.
+
+Energy score is explicitly **not implemented** here — scikit-learn LogReg logits are not neural free-energy scores and cannot be responsibly interpreted as such.
+
+For the future end-to-end audio model, additional gate signals may include entropy, energy score from neural logits, distance from embedding centroids, and agreement across noisy copies.
 
 A calibrated risk model may be trained on these features.
 
@@ -143,11 +159,7 @@ The direct audio-to-intent model remains a hypothesis. Do not claim superiority
 over the Saaras ASR cascade until both systems are evaluated on the same frozen
 synthetic/public-only test sets.
 
-The modelling phase begins with `scripts/run_saaras_baseline.py`, which caches
-Saaras transcripts and fits a character 3-5 gram TF-IDF logistic-regression
-classifier. No baseline metric is trusted until Saaras transcripts have been
-generated from the frozen ASR pool and evaluated using the frozen train,
-calibration, and final-test manifests.
+The modelling phase is executed with `scripts/run_saaras_baseline.py` using `--provider hybrid` (IndicConformer for Indic languages, Whisper-base.en for English). All 14,790 transcripts in the frozen ASR pool are generated and cached (`dataset/manifests/evaluation/hybrid_transcripts.csv`). The character 3-5 gram TF-IDF logistic-regression classifier was trained on `synthetic_train.csv` (9,720 rows), calibrated at threshold $T = 0.1234$ on `synthetic_calibration.csv` (2,340 dev rows), and evaluated on `synthetic_final_test.csv` (2,730 test rows across clean and all 6 degradation conditions). Clean test accuracy is 1.0000, robust test accuracy is 0.9996, and unseen combined test accuracy is 0.9974 (`dataset/reports/hybrid_baseline.json`).
 
 ## Current data assets and completed work
 

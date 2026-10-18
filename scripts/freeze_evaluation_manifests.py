@@ -35,6 +35,18 @@ def condition(row: dict[str, str]) -> str:
     return json.loads(row["degradation"])["condition"]
 
 
+def with_clean_condition(row: dict[str, str]) -> dict[str, str]:
+    clean = dict(row)
+    clean["variant_type"] = "synthetic_clean"
+    clean["audio_root"] = "dataset/synthetic/v0.3"
+    clean["degradation"] = json.dumps(
+        {"condition": "clean", "source_audio_path": clean["audio_path"]},
+        sort_keys=True,
+    )
+    clean["condition"] = "clean"
+    return clean
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     root = Path(__file__).resolve().parents[1]
@@ -62,7 +74,13 @@ def main() -> None:
     rows = read_rows(args.manifest)
     if not rows:
         raise ValueError("Cannot freeze empty manifest")
-    fields = list(rows[0])
+    for row in rows:
+        row["condition"] = condition(row)
+    clean_manifest = args.manifest.parent.parent / "v0.3" / "manifest.csv"
+    clean_rows = read_rows(clean_manifest)
+    clean_by_id = {row["id"]: row for row in clean_rows}
+    if len(clean_by_id) != len(clean_rows):
+        raise ValueError("Clean manifest contains duplicate source IDs")
     train_conditions = {
         "gaussian_snr10", "gaussian_snr20", "traffic_snr15",
         "office_snr15", "telephone_channel",
@@ -85,7 +103,13 @@ def main() -> None:
             row for row in rows
             if row["split"] == "test" and condition(row) in final_conditions
         ],
+        "synthetic_clean_final_test": [
+            with_clean_condition(clean_by_id[row["id"]])
+            for row in clean_rows
+            if row["split"] == "test"
+        ],
     }
+    fields = sorted({key for selected in selections.values() for row in selected for key in row})
     manifest_records: dict[str, Any] = {}
     for name, selected in selections.items():
         output_path = args.output / f"{name}.csv"
@@ -99,11 +123,15 @@ def main() -> None:
             "unseen_combined_allowed": name == "synthetic_final_test",
         }
     all_path = args.output / "synthetic_asr_pool.csv"
-    write_rows(all_path, rows, fields)
+    pool_rows = rows + [
+        with_clean_condition(row) for row in clean_rows
+    ]
+    pool_fields = sorted({key for row in pool_rows for key in row})
+    write_rows(all_path, pool_rows, pool_fields)
     manifest_records["synthetic_asr_pool"] = {
         "path": str(all_path.relative_to(root)).replace("\\", "/"),
         "sha256": digest(all_path),
-        "rows": len(rows),
+        "rows": len(pool_rows),
         "purpose": "ASR transcript generation only; classifier roles use the three frozen manifests",
     }
     public_rows = read_rows(args.public_manifest)

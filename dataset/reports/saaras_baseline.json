@@ -1,0 +1,11 @@
+{
+  "status": "blocked_incomplete_transcripts",
+  "coverage": {
+    "expected_rows": 14790,
+    "successful_rows": 2860,
+    "failed_or_missing_rows": 11930,
+    "complete": false
+  },
+  "errors": "C:\\Users\\ACER\\OneDrive\\Desktop\\VoxIntel Indic\\dataset\\reports\\saaras_transcription_errors.csv",
+  "note": "Final metrics are withheld until every frozen ASR-pool row has a successful cached transcript."
+}

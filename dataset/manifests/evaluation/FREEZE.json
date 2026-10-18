@@ -10,7 +10,7 @@
   "manifests": {
     "synthetic_train": {
       "path": "dataset/manifests/evaluation/synthetic_train.csv",
-      "sha256": "c11b8ef1ac933fa5ad22eaa11141057dfbc7f3c7aafc7a29252e851286ece885",
+      "sha256": "5a7572b5b0e7a167bb37adbb25438c35a06cffa4283deae91d1783ef24a88bfe",
       "rows": 8100,
       "split": [
         "train"
@@ -26,7 +26,7 @@
     },
     "synthetic_calibration": {
       "path": "dataset/manifests/evaluation/synthetic_calibration.csv",
-      "sha256": "6d62450f15ce9563168c42775504b0db08ebc985723926f6b4073cb1ccbed748",
+      "sha256": "7596f977addede4b90465cec434bcfcdd5c282b376f0aeeda9a5727d7088673c",
       "rows": 1950,
       "split": [
         "dev"
@@ -42,7 +42,7 @@
     },
     "synthetic_final_test": {
       "path": "dataset/manifests/evaluation/synthetic_final_test.csv",
-      "sha256": "0964958565d2a434ba968a0fd85e337a97759bec48d90108c1705560b77ca4d1",
+      "sha256": "e8bfd1ddb7933ab89297d596335f22f6847d9aed4186261f72841dce4c0bbd56",
       "rows": 2340,
       "split": [
         "test"
@@ -57,10 +57,22 @@
       ],
       "unseen_combined_allowed": true
     },
+    "synthetic_clean_final_test": {
+      "path": "dataset/manifests/evaluation/synthetic_clean_final_test.csv",
+      "sha256": "dc1d8fbb3bf3742a020ac020c3d477326768c99b22b6024ee0e2b287a1d4420a",
+      "rows": 390,
+      "split": [
+        "test"
+      ],
+      "conditions": [
+        "clean"
+      ],
+      "unseen_combined_allowed": false
+    },
     "synthetic_asr_pool": {
       "path": "dataset/manifests/evaluation/synthetic_asr_pool.csv",
-      "sha256": "d1e4a49de2cf0df7387f02cc045d7cc9030505796c0af3fa66dcd4ffb4ad77b3",
-      "rows": 12390,
+      "sha256": "7fc9cf23b3e5b9e2ac78c3e40d4a675348daf085474d6b92a8677f95b5b360c1",
+      "rows": 14790,
       "purpose": "ASR transcript generation only; classifier roles use the three frozen manifests"
     },
     "public_trusted": {
@@ -72,7 +84,7 @@
     },
     "public_curated_candidates": {
       "path": "dataset/manifests/evaluation/public_curated_candidates.csv",
-      "sha256": "2f96fd8a25b91eb30fbdaded822340e87095c1b29c244eb07b0ec79a90169350",
+      "sha256": "282a44fe4f84aef7caa2b188d1998fbb2104eab7685a400966eec18cfba8192d",
       "rows": 346,
       "purpose": "Audit and human-review queue only; excluded from trusted metrics until review_status is explicitly reviewed."
     }

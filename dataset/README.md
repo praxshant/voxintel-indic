@@ -84,6 +84,29 @@ manifest is the only one containing `unseen_combined`. The public trusted
 manifest currently contains zero rows because the 346 curated candidates and
 the remaining source labels are still unreviewed.
 
+## Baseline ASR and transcription status
+
+The synthetic ASR pool contains 14,790 rows (`dataset/manifests/evaluation/synthetic_asr_pool.csv`).
+ASR transcription is completed across the full pool via `scripts/run_saaras_baseline.py`:
+
+| Provider | Backend / Model | License | Audio Rate | Cache Path | Success Rows | Status |
+|---|---|---|---|---|---:|---|
+| `saaras` | Sarvam Saaras API (`saarika:v2.5`) | Proprietary API | 8 kHz | `dataset/manifests/evaluation/saaras_transcripts.csv` | 2,860 / 14,790 | Quota exhausted (HTTP 402) |
+| `indicconformer` | AI4Bharat IndicConformer-600M | MIT | 8 kHz → 16 kHz (resampled) | `dataset/manifests/evaluation/indicconformer_transcripts.csv` | 11,525 / 11,525 | 100% of Indic languages completed |
+| `whisper` | OpenAI Whisper-base.en | MIT | 8 kHz → 16 kHz (resampled) | `dataset/manifests/evaluation/whisper_transcripts.csv` | 3,265 / 3,265 | 100% of English (`en-IN`) completed |
+| `hybrid` | Multi-Model Local ASR (IndicConformer + Whisper) | MIT | 8 kHz → 16 kHz (resampled) | `dataset/manifests/evaluation/hybrid_transcripts.csv` | 14,790 / 14,790 | **100.0% Complete (Full Pool Evaluated)** |
+
+Key architectural rules and measured results:
+- **Cache separation**: Providers maintain separate caches (`saaras_transcripts.csv`, `indicconformer_transcripts.csv`, `whisper_transcripts.csv`, and `hybrid_transcripts.csv`). Each row explicitly records its actual model and provider.
+- **Hardware environment**: Local inference ran on NVIDIA GeForce RTX 3050 Laptop GPU (4.3 GB VRAM), CUDA 12.4, PyTorch 2.6.0+cu124.
+- **Latency performance**: Across all 14,790 audio clips, transcription latency achieved: Median = 849.5 ms, Mean = 1,167.2 ms, p95 = 2,286.4 ms, p99 = 2,982.5 ms.
+- **Evaluation completion**: Rejection threshold $T = 0.1234$ was calibrated on `synthetic_calibration.csv` (dev split only). Character 3–5-gram TF-IDF + Logistic Regression achieved:
+  - **Clean Final Test** (390 rows): Accuracy = 1.0000, In-Scope Accuracy = 1.0000, 95% CI: [1.0, 1.0]
+  - **Robust Final Test** (2,340 rows): Accuracy = 0.9996, In-Scope Accuracy = 0.9994, 95% CI: [0.9987, 1.0]
+  - **Held-Out Combined** (`unseen_combined` test-only, 390 rows): Accuracy = 0.9974, In-Scope Accuracy = 0.9967, 95% CI: [0.9923, 1.0]
+  - **Rejection & Other False Accept Rate**: False accept rate on `other` = 0.0000 across all 5 other types. Abstention rate = 0.2308 (all 90 out-of-scope examples rejected).
+  - Machine-readable report saved to `dataset/reports/hybrid_baseline.json`.
+
 ## IndicVoices
 
 `indicvoices/filtered/` contains 1,915 FLAC records from the gated

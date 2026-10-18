@@ -58,5 +58,7 @@ without a frozen, comparable evaluation.
 - Keyword filtering can retain general banking discussion rather than an
   actionable caller intent.
 - No real-speaker test set is collected or required.
+- Audio is 8 kHz telephone-band audio; resampling to 16 kHz for ASR conformer models (e.g., IndicConformer) does not restore missing high-frequency spectrum.
+- IndicConformer covers 22 official scheduled languages of India and does not support English (`en-IN`), requiring separate handling or distinct ASR backends for English phone calls.
 - Licensing and attribution requirements for IndicVoices (CC BY 4.0) must be
-  preserved when distributing derived data.
+  preserved when distributing derived data. IndicConformer model weights are licensed under MIT.

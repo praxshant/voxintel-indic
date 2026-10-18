@@ -1,0 +1,90 @@
+{
+  "status": "blocked_incomplete_transcripts",
+  "provider": "indicconformer",
+  "coverage": {
+    "expected_rows": 14790,
+    "successful_rows": 906,
+    "failed_or_missing_rows": 13884,
+    "complete": false,
+    "by_split": {
+      "train": {
+        "total": 9720,
+        "success": 620
+      },
+      "dev": {
+        "total": 2340,
+        "success": 130
+      },
+      "test": {
+        "total": 2730,
+        "success": 156
+      }
+    },
+    "by_condition": {
+      "gaussian_snr10": {
+        "total": 2400,
+        "success": 176
+      },
+      "gaussian_snr20": {
+        "total": 2400,
+        "success": 176
+      },
+      "traffic_snr15": {
+        "total": 2400,
+        "success": 176
+      },
+      "office_snr15": {
+        "total": 2400,
+        "success": 176
+      },
+      "telephone_channel": {
+        "total": 2400,
+        "success": 176
+      },
+      "unseen_combined": {
+        "total": 390,
+        "success": 26
+      },
+      "clean": {
+        "total": 2400,
+        "success": 0
+      }
+    },
+    "by_language": {
+      "hi-IN": {
+        "total": 3265,
+        "success": 134
+      },
+      "en-IN": {
+        "total": 3265,
+        "success": 0
+      },
+      "ta-IN": {
+        "total": 1420,
+        "success": 134
+      },
+      "bn-IN": {
+        "total": 1420,
+        "success": 134
+      },
+      "te-IN": {
+        "total": 1350,
+        "success": 128
+      },
+      "mr-IN": {
+        "total": 1350,
+        "success": 128
+      },
+      "gu-IN": {
+        "total": 1360,
+        "success": 124
+      },
+      "kn-IN": {
+        "total": 1360,
+        "success": 124
+      }
+    }
+  },
+  "errors": "C:\\Users\\ACER\\OneDrive\\Desktop\\VoxIntel Indic\\dataset\\reports\\indicconformer_transcription_errors.csv",
+  "note": "Final metrics are withheld until every frozen ASR-pool row has a successful cached transcript."
+}
