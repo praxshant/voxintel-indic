@@ -1,0 +1,28 @@
+{
+  "source_csv": "dataset\\source\\utterances_v0.3.csv",
+  "model": "bulbul:v3",
+  "sample_rate": 8000,
+  "voices": [
+    "shubh",
+    "simran",
+    "aditya"
+  ],
+  "variants": 1,
+  "api_key_slots": 3,
+  "rows": 8,
+  "splits": {
+    "train": 8,
+    "dev": 0,
+    "test": 0
+  },
+  "languages": [
+    "bn-IN",
+    "en-IN",
+    "gu-IN",
+    "hi-IN",
+    "kn-IN",
+    "mr-IN",
+    "ta-IN",
+    "te-IN"
+  ]
+}

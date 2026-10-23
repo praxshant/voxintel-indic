@@ -1,0 +1,90 @@
+{
+  "schema_version": "architecture_comparison_v1",
+  "systems": [
+    {
+      "system": "ASR-cascade (char n-gram)",
+      "encoder": "char-ngram TF-IDF (3-5gram) + LogReg",
+      "n_trainable_params": "N/A (sklearn)",
+      "n_train": 9720,
+      "threshold": 0.1233577699047692,
+      "latency_note": "Hybrid ASR (IndicConformer/Whisper) + TF-IDF + LogReg",
+      "clean_accuracy": 1.0,
+      "clean_coverage": 0.7692,
+      "clean_in_scope_acc": 1.0,
+      "clean_false_accept_other": 0.0,
+      "clean_ci": [
+        1.0,
+        1.0
+      ],
+      "robust_accuracy": 0.9996,
+      "robust_coverage": 0.7692,
+      "robust_in_scope_acc": 0.9994,
+      "robust_false_accept_other": 0.0,
+      "robust_ci": [
+        0.9987,
+        1.0
+      ],
+      "unseen_accuracy": 0.9974,
+      "unseen_coverage": 0.7692,
+      "aurc": 0.0,
+      "selective_acc_80pct": "N/A",
+      "selective_acc_90pct": "N/A",
+      "selective_acc_95pct": "N/A",
+      "per_condition": {
+        "clean": 1.0,
+        "gaussian_snr10": 1.0,
+        "gaussian_snr20": 1.0,
+        "office_snr15": 1.0,
+        "telephone_channel": 1.0,
+        "traffic_snr15": 1.0,
+        "unseen_combined": 0.9974
+      }
+    },
+    {
+      "system": "Direct audio (wav2vec2+MLP)",
+      "encoder": "facebook/wav2vec2-base-960h",
+      "n_trainable_params": 200203,
+      "n_train": 8100,
+      "threshold": 0.245,
+      "latency_note": "GPU inference (frozen encoder + MLP head)",
+      "clean_accuracy": 0.623,
+      "clean_coverage": 0.959,
+      "clean_in_scope_acc": 0.6483,
+      "clean_false_accept_other": 0.4643,
+      "clean_ci": [
+        0.5748,
+        0.6738
+      ],
+      "robust_accuracy": 0.6434,
+      "robust_coverage": 0.9598,
+      "robust_in_scope_acc": 0.7173,
+      "robust_false_accept_other": 0.609,
+      "robust_ci": [
+        0.6242,
+        0.6638
+      ],
+      "unseen_accuracy": 0.6486,
+      "unseen_coverage": 0.9487,
+      "aurc": 0.183962,
+      "selective_acc_80pct": 0.6998,
+      "selective_acc_90pct": 0.6671,
+      "selective_acc_95pct": 0.6473,
+      "per_condition": {
+        "gaussian_snr10": 0.5549,
+        "gaussian_snr20": 0.6756,
+        "office_snr15": 0.6817,
+        "telephone_channel": 0.6466,
+        "traffic_snr15": 0.65,
+        "unseen_combined": 0.6486
+      }
+    }
+  ],
+  "notes": [
+    "ASR-cascade: hybrid IndicConformer+Whisper ASR -> char 3-5gram TF-IDF -> Logistic Regression",
+    "Direct audio: frozen facebook/wav2vec2-base-960h encoder -> mean pool -> 2-layer MLP",
+    "Both systems use the same frozen splits (train/dev/test), identical threshold selection on dev only.",
+    "Audio is synthetic TTS at 8 kHz, resampled to 16 kHz (does not restore missing high-frequency content).",
+    "IndicVoices public labels excluded (unverified). Only synthetic ground truth used.",
+    "unseen_combined (390 rows) is strictly test-only in both systems."
+  ]
+}

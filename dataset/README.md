@@ -107,6 +107,23 @@ Key architectural rules and measured results:
   - **Rejection & Other False Accept Rate**: False accept rate on `other` = 0.0000 across all 5 other types. Abstention rate = 0.2308 (all 90 out-of-scope examples rejected).
   - Machine-readable report saved to `dataset/reports/hybrid_baseline.json`.
 
+## Direct audio-to-intent probe
+
+`scripts/train_audio_classifier.py` trains a frozen `facebook/wav2vec2-base-960h`
+encoder with a 200,203-parameter MLP intent head. The v2 run consumes the frozen
+manifests directly: 8,100 training rows, 1,950 calibration rows, a separate
+390-row clean final test, and a separate 2,340-row robustness final test. It
+joins each transcript to audio using the full condition-specific record key,
+so an utterance's clean and degraded clips cannot be conflated.
+
+The v2 report (`reports/audio_classifier_v2.json`) records 64.80% clean-test
+accuracy at 96.15% coverage and 69.87% robustness-test accuracy at 96.15%
+coverage. `unseen_combined` remains test-only and scores 73.02% at 96.92%
+coverage. The direct model's 36.56% false-accept rate on `other` means it is
+not suitable as the operational routing system; the ASR cascade remains the
+synthetic-study reference. The older v1 report is retained for audit but is
+superseded because it did not consume the frozen role manifests directly.
+
 ## IndicVoices
 
 `indicvoices/filtered/` contains 1,915 FLAC records from the gated

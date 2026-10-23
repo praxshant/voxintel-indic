@@ -67,6 +67,35 @@ validation details. In brief:
     - **Risk–Coverage (clean test)**: AURC ≈ 0.000 for all three signals. Selective accuracy: 80% cov → 1.0000, 90% cov → 1.0000, 95% cov → 1.0000.
     - **False-accept by `other_type` at fixed coverage**: 0.0000 for all five categories at 80%, 90%, and 95% coverage targets.
     - **Per-language (clean test)**: bn-IN 97.5% acc/100% cov; en-IN 100% acc/47.1% cov; gu-IN, kn-IN, mr-IN, ta-IN, te-IN all 100% acc/100% cov; hi-IN 100% acc/47.1% cov.
+  - **Direct Audio-to-Intent Model (`scripts/train_audio_classifier.py`, `dataset/reports/audio_classifier_v2.json`)**:
+    - **Architecture**: Frozen speech encoder (`facebook/wav2vec2-base-960h`, 94.4M params) + mean pooling (768-dim) + 2-layer MLP classification head (`768 -> 256 -> 11`, 200,203 trainable params).
+    - **Training**: 30 epochs with balanced class weighting on the frozen 8,100-row training manifest. Features are cached separately for each frozen role.
+    - **Reject threshold**: $T = 0.3500$ selected exclusively on the frozen 1,950-row calibration (`dev`) manifest at $\ge 95\%$ coverage.
+    - **Measured Test Metrics**:
+      - Clean Final Test (390 rows): Accuracy = 64.80%, In-Scope Accuracy = 62.24%, Coverage = 96.15%, 95% CI: [0.5973, 0.6933].
+      - Robust Final Test (2,340 rows, clean excluded): Accuracy = 69.87%, In-Scope Accuracy = 71.78%, Coverage = 96.15%.
+      - Held-Out Unseen Combined (`unseen_combined` test-only, 390 rows): Accuracy = 73.02%, Coverage = 96.92%.
+      - Risk-Coverage: AURC = 0.137886. Selective accuracy: 80% cov → 76.23%, 90% cov → 72.79%, 95% cov → 70.31%.
+    - The earlier `audio_classifier_v1.json` used ASR-pool-derived roles and a source-ID-only audio lookup; it is preserved for audit but superseded by v2.
+
+### Architecture Comparison (Synthetic Evaluation)
+
+Comparative summary from [`dataset/reports/architecture_comparison_v2.md`](./dataset/reports/architecture_comparison_v2.md):
+
+| Metric | ASR-cascade (char n-gram) | Direct audio (wav2vec2+MLP) |
+|--------|---------------------------|-----------------------------|
+| **Encoder / Features** | IndicConformer + Whisper → char TF-IDF | facebook/wav2vec2-base-960h (frozen) |
+| **Trainable Params** | N/A (scikit-learn) | 200,203 |
+| **Clean Test Accuracy** | **100.00%** | 64.80% |
+| **Clean Test Coverage** | 76.92% | 96.15% |
+| **Robust Test Accuracy** | **99.96%** | 69.87% |
+| **Robust Test Coverage** | 76.92% | 96.15% |
+| **Unseen Combined Accuracy** | **99.74%** | 73.02% |
+| **AURC (↓ better)** | **0.000000** | 0.137886 |
+| **False-Accept (Other)** | **0.00%** | 36.56% |
+
+**Key Research Finding**: On noisy code-mixed Indic telephone audio, the specialized ASR cascade substantially outperforms a frozen general-purpose English audio encoder. Transcribing spoken audio into orthographic text allows character n-grams to capture multilingual intent signals effectively, whereas a frozen English wav2vec2 encoder does not cleanly separate Indic phonetic features without domain-specific Indic pre-training.
+
 - The frozen public trusted manifest has zero rows until IndicVoices labels
   receive explicit human review; unreviewed keyword candidates are not metrics.
 - Public candidates currently cover `balance`, `pay_bill`, `emi_due`,

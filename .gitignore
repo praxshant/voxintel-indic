@@ -16,3 +16,5 @@ v0.3_source_validation.json
 dataset/reports/data_readiness_validation.json
 *.wav
 *.flac
+*.pt
+dataset/models/

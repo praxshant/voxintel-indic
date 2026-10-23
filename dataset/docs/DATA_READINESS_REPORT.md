@@ -77,6 +77,20 @@ independence.
 The clean, baseline-noisy, expanded-robustness synthetic-audio gates, and full ASR baseline transcription and evaluation gates are
 passed. The frozen synthetic baseline is completely established.
 
+## Direct audio-to-intent probe status
+
+The direct-audio probe v2 is complete on the frozen manifests: 8,100 training
+rows, 1,950 calibration rows, 390 clean-test rows, and 2,340 robustness-test
+rows. The frozen English `facebook/wav2vec2-base-960h` encoder and a
+200,203-parameter MLP head reached 64.80% clean accuracy and 69.87% robustness
+accuracy at 96.15% coverage. Its false-accept rate on `other` is 36.56% on the
+robustness final test. This result is synthetic-only and does not change the
+public-label readiness status: `public_trusted.csv` remains empty.
+
+The v2 loader uses the frozen manifests directly and matches audio by the full
+condition-specific record key. It supersedes `audio_classifier_v1.json`, which
+is retained solely as a non-authoritative audit artifact.
+
 ## ASR baseline readiness & measured evaluation
 
 The baseline pipeline (`scripts/run_saaras_baseline.py`) has processed all 14,790 clips in `dataset/manifests/evaluation/synthetic_asr_pool.csv`.

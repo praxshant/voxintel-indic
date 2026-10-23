@@ -1,0 +1,170 @@
+{
+  "schema_version": "audio_error_analysis_v1",
+  "source_report": "C:\\Users\\ACER\\OneDrive\\Desktop\\VoxIntel Indic\\dataset\\reports\\audio_classifier_v2.json",
+  "selection_note": "Descriptive frozen-test analysis only; do not use for model or threshold selection.",
+  "robustness": {
+    "accuracy": 0.6987,
+    "coverage": 0.9615,
+    "false_accept_rate_other": 0.3656,
+    "n_total": 2340,
+    "n_accepted": 2250
+  },
+  "conditions": [
+    {
+      "condition": "gaussian_snr10",
+      "accuracy": 0.5895,
+      "coverage": 0.9308,
+      "false_accept_rate_other": 0.4458
+    },
+    {
+      "condition": "traffic_snr15",
+      "accuracy": 0.6755,
+      "coverage": 0.9641,
+      "false_accept_rate_other": 0.494
+    },
+    {
+      "condition": "telephone_channel",
+      "accuracy": 0.7124,
+      "coverage": 0.9718,
+      "false_accept_rate_other": 0.3678
+    },
+    {
+      "condition": "gaussian_snr20",
+      "accuracy": 0.7222,
+      "coverage": 0.9692,
+      "false_accept_rate_other": 0.3483
+    },
+    {
+      "condition": "unseen_combined",
+      "accuracy": 0.7302,
+      "coverage": 0.9692,
+      "false_accept_rate_other": 0.2614
+    },
+    {
+      "condition": "office_snr15",
+      "accuracy": 0.758,
+      "coverage": 0.9641,
+      "false_accept_rate_other": 0.2874
+    }
+  ],
+  "class_metrics": [
+    {
+      "label": "balance",
+      "support": 180,
+      "precision": 0.5613,
+      "recall": 0.4833
+    },
+    {
+      "label": "complaint_status",
+      "support": 180,
+      "precision": 0.8151,
+      "recall": 0.5389
+    },
+    {
+      "label": "update_details",
+      "support": 180,
+      "precision": 0.7883,
+      "recall": 0.6
+    },
+    {
+      "label": "other",
+      "support": 540,
+      "precision": 0.9178,
+      "recall": 0.6204
+    },
+    {
+      "label": "block_card",
+      "support": 180,
+      "precision": 0.6298,
+      "recall": 0.6333
+    },
+    {
+      "label": "transfer_to_agent",
+      "support": 180,
+      "precision": 0.7558,
+      "recall": 0.7222
+    },
+    {
+      "label": "emi_due",
+      "support": 180,
+      "precision": 0.5921,
+      "recall": 0.75
+    },
+    {
+      "label": "recent_transactions",
+      "support": 180,
+      "precision": 0.6699,
+      "recall": 0.7667
+    },
+    {
+      "label": "report_fraud",
+      "support": 180,
+      "precision": 0.73,
+      "recall": 0.8111
+    },
+    {
+      "label": "pay_bill",
+      "support": 180,
+      "precision": 0.4853,
+      "recall": 0.8278
+    },
+    {
+      "label": "branch_timing",
+      "support": 180,
+      "precision": 0.5963,
+      "recall": 0.8944
+    }
+  ],
+  "top_confusions": [
+    {
+      "actual": "other",
+      "predicted": "emi_due",
+      "count": 58
+    },
+    {
+      "actual": "other",
+      "predicted": "pay_bill",
+      "count": 36
+    },
+    {
+      "actual": "other",
+      "predicted": "branch_timing",
+      "count": 26
+    },
+    {
+      "actual": "other",
+      "predicted": "block_card",
+      "count": 25
+    },
+    {
+      "actual": "complaint_status",
+      "predicted": "balance",
+      "count": 23
+    },
+    {
+      "actual": "emi_due",
+      "predicted": "pay_bill",
+      "count": 22
+    },
+    {
+      "actual": "balance",
+      "predicted": "pay_bill",
+      "count": 21
+    },
+    {
+      "actual": "balance",
+      "predicted": "block_card",
+      "count": 20
+    },
+    {
+      "actual": "balance",
+      "predicted": "branch_timing",
+      "count": 20
+    },
+    {
+      "actual": "transfer_to_agent",
+      "predicted": "pay_bill",
+      "count": 20
+    }
+  ]
+}

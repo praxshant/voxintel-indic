@@ -72,29 +72,97 @@ Measured Results (`dataset/reports/hybrid_baseline_v2.json`):
 - **False-accept at fixed coverage targets**: 0.0000 for all five `other_type` categories at 80%, 90%, and 95% coverage.
 - **Signal comparison (calibration split)**: max_prob / margin / norm_entropy each select threshold achieving 99.94% recall at precision 1.0.
 
-### End-to-end path
-The proposed end-to-end model uses:
+### End-to-end path (Direct Audio-to-Intent v2)
+The direct audio model is implemented in `scripts/train_audio_classifier.py` and evaluated in `dataset/reports/audio_classifier_v2.json`:
 
-- an audio encoder
-- pooled embeddings
-- an intent head
-- a reject gate
-- an auxiliary text/character decoder for entity handling (stretch goal)
+- **Encoder**: Frozen `facebook/wav2vec2-base-960h` (94.4M params) operating on 16 kHz resampled telephone-band audio.
+- **Pooling**: Mean-pooled temporal representations (768-dim vector per utterance).
+- **Classification Head**: 2-layer MLP (`Linear(768, 256) -> LayerNorm -> ReLU -> Dropout(0.3) -> Linear(256, 11)`, 200,203 trainable parameters).
+- **Training Strategy**: One-pass feature extraction cached separately per frozen manifest; head trained for 30 epochs using Adam ($lr=1e-3$) and balanced class weighting on the 8,100 training rows only.
+- **Reject Gate**: Calibrated on the 1,950-row dev manifest targeting $\ge 95\%$ coverage. Operating threshold: $T = 0.3500$.
 
-The encoder sees telephone-band audio; 8 kHz audio is upsampled before processing, but the model still operates on telephone-band content. The reject gate decides whether the predicted intent is safe to act on, or whether the input should be routed to clarify/fallback instead.
+Measured Results (`dataset/reports/audio_classifier_v2.json`):
+- **Clean Final Test** (390 rows): Accuracy = 64.80%, Coverage = 96.15%, In-Scope Accuracy = 62.24%, 95% CI: [0.5973, 0.6933].
+- **Robust Final Test** (2,340 rows, clean excluded): Accuracy = 69.87%, Coverage = 96.15%, In-Scope Accuracy = 71.78%, False Accept Rate on `other` = 36.56%.
+- **Unseen Combined Condition** (`unseen_combined` test-only, 390 rows): Accuracy = 73.02%, Coverage = 96.92%.
+- **Risk-Coverage (Robust Test)**: AURC = 0.137886. Selective accuracy: 80% coverage → 76.23%, 90% coverage → 72.79%, 95% coverage → 70.31%.
+- v1 is retained for audit only; it did not consume the frozen manifests directly and is superseded by v2.
 
-### Reject gate (implemented for baseline)
-The reject gate is implemented for the ASR+classifier baseline. Current signals:
+### Comparative Finding: Cascade vs. Direct Audio
+Documented in `dataset/reports/architecture_comparison_v2.md`:
+- The ASR-cascade (hybrid IndicConformer/Whisper -> char 3-5gram TF-IDF -> LogReg) achieves **100% clean / 99.96% robust accuracy** (at 76.92% coverage with zero false accepts on `other`).
+- The direct audio model achieves **64.80% clean / 69.87% robust accuracy** (at 96.15% coverage with 36.56% false accepts on `other`).
+- **Empirical conclusion**: For code-mixed Indic telephone audio, an explicit multilingual ASR stage that transcribes speech into text is dramatically superior to a frozen English audio encoder. Spoken language diversity and phonetic code-mixing require either explicit multilingual speech-to-text decoding or large-scale multilingual audio pre-training.
 
-- **max_prob**: Maximum softmax probability. Current operating threshold: T=0.1234.
-- **margin**: P_top1 − P_top2 (decision-boundary margin). Threshold: 0.0137 on calibration split.
-- **norm_entropy**: 1 − H/log(K) (normalised Shannon entropy, higher = more confident). Threshold: 0.0065.
+### Reject gate (implemented for baseline & audio model)
+The reject gate is implemented for both systems:
+- For the ASR-cascade baseline: `max_prob` ($T=0.1234$), `margin` ($T=0.0137$), `norm_entropy` ($T=0.0065$).
+- For the authoritative direct-audio v2 report: `max_prob` ($T=0.3500$).
+Energy score is explicitly **not implemented** for the baseline — scikit-learn LogReg logits are not neural free-energy scores and cannot be responsibly interpreted as such.
 
-Energy score is explicitly **not implemented** here — scikit-learn LogReg logits are not neural free-energy scores and cannot be responsibly interpreted as such.
+## Research-guided next steps (keep this simple)
 
-For the future end-to-end audio model, additional gate signals may include entropy, energy score from neural logits, distance from embedding centroids, and agreement across noisy copies.
+This guide translates recent research into actions that fit the assignment. It
+does not change the frozen evaluation policy, required metrics, or cut line.
 
-A calibrated risk model may be trained on these features.
+1. **Keep the ASR cascade as the reference.** Recent multilingual SLU work
+   evaluates cascaded and direct systems side by side. The local hybrid cascade
+   is the strong measured reference here; a direct model must not replace it
+   without stronger evidence.
+2. **Try one Indic or multilingual speech encoder next.** The current direct
+   probe uses a frozen English wav2vec2 encoder, which is a poor linguistic
+   match for code-mixed Indic telephone audio. If hardware permits, run one
+   small probe with a locally available Indic/multilingual encoder on the same
+   frozen manifests. Do not add a large model, new dataset, or external service
+   merely to follow a paper.
+3. **Improve data checks before model complexity.** TTS can help, but synthetic
+   speech still differs from real speech. Keep the validator, inspect a small
+   deterministic audio sample, and continue to state that synthetic metrics do
+   not establish real-caller performance.
+4. **Choose using dev only.** Compare small choices such as frozen features
+   versus unfreezing only upper layers using `synthetic_calibration.csv`. Once
+   the choice is fixed, run the clean and robustness tests once. Never use a
+   final test to select a model or threshold.
+5. **Treat false accepts as a primary result.** Always report coverage,
+   in-scope accuracy, and false accepts for each `other_type`. A model with a
+   high false-accept rate is a research outcome, not an operational router.
+6. **Keep advanced extensions out of the core.** CTC, distillation, entity
+   decoding, custom transfer modules, and public metrics remain stretch work.
+   One reproducible encoder comparison plus error analysis is the appropriate
+   next scope.
+
+### Current direct-audio error-analysis finding
+
+`dataset/reports/audio_classifier_v2_error_analysis.md` is a descriptive,
+post-hoc analysis of the frozen robustness test. It must not be used to retune
+v2. The main finding is safety-related: `other` is most often incorrectly
+routed as `emi_due` (58 cases) or `pay_bill` (36 cases). The weakest evaluated
+conditions are `gaussian_snr10` (58.95% accepted accuracy) and
+`traffic_snr15` (49.40% `other` false-accept rate). This confirms that v2 is a
+research probe, not an operational routing model.
+
+### Current multilingual-probe blocker
+
+The local Hugging Face cache contains the configuration for
+`facebook/wav2vec2-xls-r-300m`, but not its model weights; the cache explicitly
+marks the weights absent. Do not quietly download a large model merely to
+continue the experiment. If a user authorizes the download, first run a small
+dev-only probe; otherwise retain the completed error analysis and the hybrid
+ASR cascade as the supported result.
+
+### Small reading list
+
+- [Speech-MASSIVE (Lee et al., 2024)](https://arxiv.org/abs/2408.03900):
+  supports comparing cascaded and end-to-end SLU under the same task setup.
+- [Enhancing Synthetic Training Data for Speech Commands (Quintas et al.,
+  2024)](https://arxiv.org/abs/2409.12745): motivates simple synthetic-audio
+  quality checks and explicit synthetic-to-real limitations.
+- [INT: Multilingual Intent Detection and Slot Filling (Wu et al.,
+  2025)](https://aclanthology.org/2025.findings-acl.783/): shows why
+  multilingual transfer is challenging; it motivates an Indic/multilingual
+  encoder, not a complex new architecture in this project.
+- [AI4Bharat IndicConformer](https://ai4bharat.iitm.ac.in/areas/model/ASR/IndicConformer/):
+  an Indic-language model family already used by the local cascade.
 
 ## Data strategy
 

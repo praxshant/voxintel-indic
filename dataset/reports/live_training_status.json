@@ -1,0 +1,13 @@
+{
+  "status": "completed",
+  "total_epochs": 100,
+  "best_epoch": 41,
+  "best_dev_accuracy": 0.5856,
+  "epochs_completed": 51,
+  "final_train_loss": 0.8819,
+  "final_train_acc": 0.7291,
+  "final_dev_loss": 1.1464,
+  "final_dev_acc": 0.5733,
+  "total_training_time_seconds": 79.36,
+  "completed_at": "2026-10-22 22:58:25"
+}

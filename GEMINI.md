@@ -27,11 +27,11 @@ The required comparison is:
 1. ASR transcript → text intent classifier
 2. Future direct audio → intent classifier
 
-The current milestone is only the first path:
+The cascade baseline is complete and remains the operational reference. A
+direct audio-to-intent probe is also implemented, but it is a synthetic-only
+research comparison and is not an operational replacement:
 
 Saaras or an alternative Indic ASR → character n-gram intent classifier → reject/abstain gate
-
-Do not implement the direct audio model yet.
 
 The system must support:
 
@@ -56,7 +56,56 @@ The system must support:
 - Calibration and threshold selection only on calibration/dev data
 - No test data for training, calibration, model selection, or threshold tuning
 
-The immediate goal is to complete the frozen synthetic baseline as far as technically possible.
+The immediate goal is to preserve the frozen synthetic evaluation and make only
+small, reproducible improvements that satisfy the rules below.
+
+## Simple research guide
+
+Use this guide only within the assignment requirements; it is not permission to
+expand the project scope.
+
+1. **Compare, do not replace.** Keep the hybrid ASR cascade as the reference
+   system. Recent Speech-MASSIVE work evaluates cascaded and end-to-end SLU
+   together, which matches this assignment's comparison requirement.
+2. **Prefer an Indic/multilingual encoder for the next direct-audio probe.**
+   The current frozen English encoder is a weak match for code-mixed Indic
+   audio. At most, test one locally available multilingual/Indic encoder on the
+   same frozen manifests. Do not add a new large download or service unless it
+   is necessary and practical.
+3. **Keep TTS claims modest.** Research on synthetic speech commands supports
+   basic audio-quality filtering but still finds a synthetic-to-real mismatch.
+   Preserve the validator, inspect a small deterministic sample, and never turn
+   synthetic performance into a real-caller claim.
+4. **Use calibration data for every decision.** Select encoder settings,
+   fine-tuning depth, rejection threshold, and early stopping from the frozen
+   dev/calibration split only. Run final tests after selection, not during it.
+5. **Use the required safety metrics.** Report coverage, in-scope accuracy,
+   confidence intervals, and false accepts by `other_type`. High false accepts
+   mean the model remains research-only.
+6. **Stay within the cut line.** Do not add CTC, distillation, entity decoding,
+   custom multilingual transfer modules, public-label metrics, or a new data
+   collection effort unless the user explicitly expands scope.
+
+### Current direct-audio analysis and blocker
+
+Read `dataset/reports/audio_classifier_v2_error_analysis.md` before proposing a
+new direct-audio run. It is descriptive final-test analysis only, not a tuning
+source. The key issue is unsafe `other` routing: the largest errors are `other`
+to `emi_due` and `other` to `pay_bill`; traffic and 10 dB Gaussian conditions
+are the weakest evaluated conditions.
+
+`facebook/wav2vec2-xls-r-300m` is listed in the local Hugging Face cache but
+has no local weights, so an offline Indic/multilingual direct probe cannot run.
+Do not start a large download without explicit authorization. If authorized,
+use one small calibration-only smoke probe first; keep the hybrid ASR cascade
+as the supported reference until a new frozen evaluation is completed.
+
+### Reading list for context
+
+- [Speech-MASSIVE (Lee et al., 2024)](https://arxiv.org/abs/2408.03900)
+- [Synthetic Speech Commands Quality Checks (Quintas et al., 2024)](https://arxiv.org/abs/2409.12745)
+- [Multilingual Intent Transfer (Wu et al., 2025)](https://aclanthology.org/2025.findings-acl.783/)
+- [AI4Bharat IndicConformer](https://ai4bharat.iitm.ac.in/areas/model/ASR/IndicConformer/)
 
 ---
 
